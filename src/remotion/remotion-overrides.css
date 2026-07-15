@@ -1,0 +1,14 @@
+/*
+ * Video-only overrides. The Remotion viewport is 1080x1920, which triggers the
+ * raw `@media (min-width: 640px)` blocks in globals.css — but the app UI lives
+ * inside a 393pt iPhone screen and must keep its true mobile metrics.
+ * (Tailwind `sm:` variants are already disabled via src/remotion/tailwind.config.ts.)
+ */
+.page-shell,
+.page-shell-narrow,
+.page-shell-home,
+.page-shell-gallery {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+}

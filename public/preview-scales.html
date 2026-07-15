@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scales Sprite Preview — Locked Frames</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 24px;
+        background: #08080c;
+        color: #ffe600;
+        font-family: monospace;
+        text-align: center;
+      }
+      h1 { font-size: 13px; letter-spacing: 0.18em; }
+      .hint { color: #707085; font-size: 12px; margin-bottom: 20px; }
+      .stage {
+        display: inline-block;
+        border: 4px solid #333348;
+        box-shadow: 0 0 0 4px #000;
+        background: #000;
+        padding: 28px 40px;
+        margin-bottom: 28px;
+      }
+      .scales {
+        width: 160px;
+        height: 160px;
+        margin: 0 auto;
+        background-image: url("/pixel/scales-weigh-sheet.png");
+        background-repeat: no-repeat;
+        background-size: 1280px 160px;
+        image-rendering: pixelated;
+        --scales-frame: 160px;
+        animation: scales-weigh-sheet 1.6s steps(8) infinite;
+      }
+      @keyframes scales-weigh-sheet {
+        from { background-position: 0 0; }
+        to { background-position: calc(var(--scales-frame) * -8) 0; }
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      @media (max-width: 640px) {
+        .grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      .cell {
+        background: #000;
+        border: 2px solid #333348;
+        padding: 8px;
+      }
+      .cell img {
+        width: 96px;
+        height: 96px;
+        image-rendering: pixelated;
+      }
+      .cell span {
+        display: block;
+        margin-top: 6px;
+        font-size: 10px;
+        color: #00f0ff;
+      }
+      .sheet {
+        margin-top: 24px;
+        max-width: 100%;
+        image-rendering: pixelated;
+        border: 2px solid #333348;
+        background: #111;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>LOCKED GEOMETRY — SAME ART EVERY FRAME</h1>
+    <p class="hint">Only tip angle changes. Base / pillar / pan shapes are identical.</p>
+
+    <div class="stage">
+      <div class="scales" role="img" aria-label="Weighing scales"></div>
+      <p style="margin:10px 0 0;font-size:11px;color:#00f0ff;letter-spacing:0.15em">WEIGHING ARGUMENTS</p>
+    </div>
+
+    <div class="grid">
+      <div class="cell"><img src="/pixel/scales-frame-01.png" alt="f1" /><span>01 CENTER</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-02.png" alt="f2" /><span>02 RIGHT</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-03.png" alt="f3" /><span>03 HEAVY R</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-04.png" alt="f4" /><span>04 RIGHT</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-05.png" alt="f5" /><span>05 CENTER</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-06.png" alt="f6" /><span>06 LEFT</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-07.png" alt="f7" /><span>07 HEAVY L</span></div>
+      <div class="cell"><img src="/pixel/scales-frame-08.png" alt="f8" /><span>08 LEFT</span></div>
+    </div>
+
+    <img class="sheet" src="/pixel/scales-weigh-sheet.png" width="1024" height="128" alt="full sheet" />
+  </body>
+</html>
