@@ -8,7 +8,10 @@ BEEF is a viral, arcade-themed web app where two people submit both sides of an 
 
 ## The on-chain component (Monad)
 
-Contract: [`contracts/BeefVerdictRegistry.sol`](contracts/BeefVerdictRegistry.sol) — deployed on **Monad testnet** (chain id `10143`).
+Contract: [`contracts/BeefVerdictRegistry.sol`](contracts/BeefVerdictRegistry.sol) — **live on Monad testnet** (chain id `10143`):
+
+- **Registry address:** [`0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa`](https://testnet.monadexplorer.com/address/0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa)
+- **Example sealed verdict:** [case #0021 seal tx](https://testnet.monadexplorer.com/tx/0x1536e1e9d60a099630f0bfc8f099e00c48f26cc7444e881a8496c26081971c63)
 
 The flow:
 
