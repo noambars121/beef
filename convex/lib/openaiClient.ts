@@ -1,6 +1,6 @@
 /**
  * OpenAI Chat Completions client for Convex Node actions.
- * Default model: gpt-4.1-nano (cheapest OpenAI model this project can access).
+ * Default model: gpt-5-nano (cheap + fast for JSON verdicts).
  */
 
 const OPENAI_API_BASE = "https://api.openai.com/v1";
@@ -29,7 +29,7 @@ function getApiKey(): string {
 }
 
 function defaultModelId(): string {
-  return process.env.OPENAI_MODEL_ID ?? "gpt-4.1-nano";
+  return process.env.OPENAI_MODEL_ID ?? "gpt-5-nano";
 }
 
 export async function completeJudgePrompt(
@@ -61,8 +61,9 @@ export async function completeJudgePrompt(
     body: JSON.stringify({
       model: defaultModelId(),
       messages,
-      max_completion_tokens: 1200,
-      temperature: 0.7,
+      // GPT-5 family: budget covers reasoning + visible output.
+      max_completion_tokens: 4000,
+      reasoning_effort: "minimal",
       response_format: { type: "json_object" },
     }),
     cache: "no-store",

@@ -36,7 +36,7 @@ const toneValidator = v.union(
 /**
  * Durable deliberation worker. Scheduled from enqueueDeliberation so the
  * Next.js serverless request can return 202 without killing the loop.
- * Uses OpenAI gpt-4.1-nano (direct chat completion — seconds, not minutes).
+ * Uses OpenAI gpt-5-nano (direct chat completion — seconds, not minutes).
  */
 export const runDeliberation = internalAction({
   args: {
