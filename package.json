@@ -18,6 +18,7 @@
     "video:thumbnail": "remotion still BeefViralIphoneDemo out/BEEF_iPhone17_Viral_Thumbnail.png --frame=856"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "convex": "^1.42.1",
     "framer-motion": "^12.42.2",
     "nanoid": "^5.1.16",

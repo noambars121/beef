@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Cinzel, DM_Sans, JetBrains_Mono, Press_Start_2P } from "next/font/google";
 import { CourtroomBackground } from "@/components/layout/CourtroomBackground";
 import { BackgroundMusicProvider } from "@/components/layout/BackgroundMusic";
@@ -65,6 +66,7 @@ export default function RootLayout({
             </div>
           </BackgroundMusicProvider>
         </ConvexClientProvider>
+        <Analytics />
       </body>
     </html>
   );
