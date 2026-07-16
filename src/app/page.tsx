@@ -6,24 +6,22 @@ import { PixelIcon } from "@/components/pixel/PixelIcon";
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-3 py-2 text-center sm:px-6 sm:py-3">
-      <div className="m-auto flex w-full flex-col items-center py-2">
-      <p className="font-arcade text-[10px] uppercase tracking-[0.25em] text-arcade-pink text-flash sm:text-[11px] sm:tracking-[0.4em]">
+    <main className="page-shell-home relative z-10 text-center">
+      <p className="font-arcade text-[9px] uppercase tracking-[0.25em] text-arcade-pink text-flash max-[700px]:text-[8px] sm:text-[11px] sm:tracking-[0.4em]">
         INSERT BEEF TO START
       </p>
 
-      <h1 className="beef-title-fx mt-4 font-arcade text-5xl leading-snug arcade-gradient-text sm:mt-6 sm:text-6xl md:text-7xl">
+      <h1 className="beef-title-fx mt-2 font-arcade text-[clamp(2.5rem,12vw,4.5rem)] leading-snug arcade-gradient-text max-[700px]:mt-1.5 sm:mt-3">
         BEEF
       </h1>
 
-      <p className="beef-sub-fx mt-4 px-2 font-mono text-[clamp(0.9rem,4vw,1.25rem)] font-bold uppercase leading-snug tracking-wide sm:mt-6 sm:whitespace-nowrap sm:tracking-wider">
+      <p className="beef-sub-fx mt-2 px-2 font-mono text-[clamp(0.8rem,3.4vw,1.15rem)] font-bold uppercase leading-snug tracking-wide max-[700px]:mt-1.5 sm:mt-3 sm:whitespace-nowrap sm:tracking-wider">
         Don&apos;t just win the argument.
         <br className="sm:hidden" />{" "}
         Destroy their ego
       </p>
 
-      {/* Matching CTA buttons — same display size */}
-      <div className="mt-8 flex w-full max-w-sm flex-col items-center gap-4 px-2 sm:mt-10 sm:max-w-none sm:flex-row sm:justify-center sm:gap-6">
+      <div className="mt-4 flex w-full max-w-sm flex-col items-center gap-2.5 px-2 max-[700px]:mt-3 max-[700px]:gap-2 sm:mt-5 sm:max-w-none sm:flex-row sm:justify-center sm:gap-5">
         <Link
           href="/case/new"
           className="group touch-target block transition-transform hover:-translate-y-1 active:translate-y-0"
@@ -35,7 +33,7 @@ export default function HomePage() {
             height={96}
             alt="CALL THE JUDGE"
             priority
-            className="h-auto w-[280px] drop-shadow-[0_4px_0_#000] transition-transform group-hover:brightness-110 sm:w-[320px]"
+            className="h-auto w-[min(240px,72vw)] drop-shadow-[0_4px_0_#000] transition-transform group-hover:brightness-110 max-[700px]:w-[min(210px,68vw)] sm:w-[280px]"
           />
         </Link>
         <Link
@@ -49,13 +47,12 @@ export default function HomePage() {
             height={96}
             alt="HALL OF SHAME"
             priority
-            className="h-auto w-[280px] drop-shadow-[0_4px_0_#000] transition-transform group-hover:brightness-110 sm:w-[320px]"
+            className="h-auto w-[min(240px,72vw)] drop-shadow-[0_4px_0_#000] transition-transform group-hover:brightness-110 max-[700px]:w-[min(210px,68vw)] sm:w-[280px]"
           />
         </Link>
       </div>
 
-      {/* Legal microcopy — entertainment only, links to the AI disclosure */}
-      <p className="mt-4 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-court-muted sm:mt-5 sm:text-[11px] sm:tracking-[0.2em]">
+      <p className="mt-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-court-muted max-[700px]:mt-2 sm:mt-3 sm:text-[11px] sm:tracking-[0.2em]">
         FOR PETTY DEBATES.{" "}
         <Link
           href="/ai-disclosure"
@@ -65,9 +62,8 @@ export default function HomePage() {
         </Link>
       </p>
 
-      {/* On-chain court record — every ruling is sealed on Monad */}
       <p
-        className="mt-3 inline-flex items-center gap-1.5 border-2 bg-black/70 px-3 py-1.5 font-arcade text-[7px] uppercase tracking-widest sm:text-[8px]"
+        className="mt-2 inline-flex max-w-[min(100%,22rem)] items-center gap-1.5 border-2 bg-black/70 px-2.5 py-1 font-arcade text-[6px] uppercase leading-snug tracking-widest max-[700px]:mt-1.5 sm:text-[7px]"
         style={{
           borderColor: "#836EF9",
           color: "#836EF9",
@@ -77,8 +73,7 @@ export default function HomePage() {
         ⛓ EVERY VERDICT SEALED ON MONAD — TAMPER-PROOF COURT RECORD
       </p>
 
-      {/* Matching stat tiles — same square size */}
-      <div className="mt-8 grid w-full max-w-md grid-cols-3 gap-3 px-2 sm:mt-12 sm:max-w-xl sm:gap-6">
+      <div className="mt-3 grid w-full max-w-md grid-cols-3 gap-2 px-2 max-[700px]:mt-2 max-[700px]:gap-1.5 sm:mt-4 sm:max-w-lg sm:gap-4">
         {(
           [
             { asset: "statPlayers" as const, label: "2P Players" },
@@ -91,16 +86,15 @@ export default function HomePage() {
               asset={item.asset}
               size={140}
               alt={item.label}
-              className="h-auto w-full max-w-[110px] drop-shadow-[0_4px_0_#000] sm:max-w-[140px]"
+              className="h-auto w-full max-w-[72px] drop-shadow-[0_4px_0_#000] max-[700px]:max-w-[60px] sm:max-w-[100px]"
             />
           </div>
         ))}
       </div>
 
-      <p className="mt-6 sm:mt-8">
+      <p className="mt-2.5 max-[700px]:mt-2 sm:mt-3">
         <BuilderCredit />
       </p>
-      </div>
     </main>
   );
 }

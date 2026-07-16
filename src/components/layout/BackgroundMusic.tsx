@@ -126,7 +126,7 @@ function useBgm() {
   return ctx;
 }
 
-/** Mute toggle — fixed top-right; does not scroll with page content. */
+/** Mute toggle — fixed top-right, inset past scrollbar + safe-area. */
 export function BgmMuteButton({ className = "" }: { className?: string }) {
   const { muted, ready, toggle } = useBgm();
 

@@ -32,19 +32,28 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 const DURATION = 0.42;
 
 function PageChrome({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
   return (
-    <div className="relative h-full min-h-0 w-full overflow-x-hidden overflow-y-auto">
-      {/* Fixed mute — stays put while page content scrolls */}
-      <div className="pointer-events-none fixed right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))] z-[60]">
+    <div
+      className={[
+        "relative h-full min-h-0 w-full overflow-x-hidden",
+        // Home is a single locked viewport; other routes may scroll.
+        isHome ? "overflow-y-hidden" : "overflow-y-auto",
+      ].join(" ")}
+    >
+      {/* Fixed mute — clear classic scrollbar (~16px) + safe-area */}
+      <div className="pointer-events-none fixed right-[max(1.75rem,calc(env(safe-area-inset-right)+1.25rem))] top-[max(0.75rem,env(safe-area-inset-top))] z-[60]">
         <div className="pointer-events-auto">
           <BgmMuteButton />
         </div>
       </div>
 
-      {/* Footer sits at the bottom of the document — only visible when scrolled down */}
-      <div className="flex min-h-full flex-col">
+      <div className={isHome ? "flex h-full min-h-0 flex-col" : "flex min-h-full flex-col"}>
         <div className="min-h-0 flex-1">{children}</div>
-        <SiteFooter />
+        {/* Home stays above the fold — legal links live on other pages */}
+        {!isHome ? <SiteFooter /> : null}
       </div>
     </div>
   );

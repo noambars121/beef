@@ -93,7 +93,8 @@ body {
 
   .page-shell-home {
     @apply mx-auto flex h-full w-full max-w-5xl flex-col items-center justify-center overflow-hidden px-3 sm:px-6;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
 
   .touch-target {
