@@ -1,9 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
-import { interpolate, useCurrentFrame } from "remotion";
+import { Easing, interpolate, useCurrentFrame } from "remotion";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { CASE_CATEGORIES, VERDICT_TONES } from "@/types";
+import { CASE_CATEGORIES, JURY_WINDOW_MINUTES, VERDICT_TONES } from "@/types";
 import { DEMO_CASE, DEMO_SIDE_A, DEMO_SIDE_B } from "../data/demoCase";
 import { SCREEN } from "../lib/timeline";
 import { typedSlice } from "../components/TypeText";
@@ -310,107 +310,245 @@ function PartyStepR({ side }: { side: "A" | "B" }) {
   );
 }
 
+function ConsentCheckboxR({
+  checked,
+  tapFrame,
+  children,
+}: {
+  checked: boolean;
+  tapFrame: number;
+  children: ReactNode;
+}) {
+  const frame = useCurrentFrame();
+  const press = interpolate(frame, [tapFrame - 1, tapFrame + 2, tapFrame + 8], [0, 1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <div className="min-w-0" style={{ transform: `scale(${1 - press * 0.02})` }}>
+      <label
+        className={[
+          "flex cursor-pointer items-start gap-2.5 border-2 bg-black/60 p-2",
+          checked ? "border-arcade-yellow/60" : "border-arcade-border",
+        ].join(" ")}
+      >
+        {/* Native checkbox look (accent-arcade-yellow), frame-driven */}
+        <span
+          aria-hidden
+          className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border-2"
+          style={{
+            borderColor: checked ? "#ffe600" : "#8b8b9e",
+            backgroundColor: checked ? "#ffe600" : "#0a0a0f",
+          }}
+        >
+          {checked && (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1.5 5.2 4 7.7 8.6 2.6" stroke="#000" strokeWidth="2" />
+            </svg>
+          )}
+        </span>
+        <span className="min-w-0 font-mono text-[11px] leading-relaxed text-foreground/90">
+          {children}
+        </span>
+      </label>
+    </div>
+  );
+}
+
 function ReviewStepR() {
   const frame = useCurrentFrame();
-  // Savage tone selection pulse
-  const toneFlash = interpolate(
+
+  // Internal scroll down to JURY MODE + FINAL CLEARANCE (real step scrolls)
+  const scrollY = interpolate(
     frame,
-    [SCREEN.reviewToneFlash, SCREEN.reviewToneFlash + 4, SCREEN.reviewToneFlash + 12],
+    [SCREEN.reviewScrollStart, SCREEN.reviewScrollEnd],
+    [0, 344],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.inOut(Easing.cubic),
+    }
+  );
+
+  const juryOn = frame >= SCREEN.juryToggleTap + 2;
+  const juryPress = interpolate(
+    frame,
+    [SCREEN.juryToggleTap - 1, SCREEN.juryToggleTap + 2, SCREEN.juryToggleTap + 10],
     [0, 1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
+  const consent1 = frame >= SCREEN.consentTap1 + 2;
+  const consent2 = frame >= SCREEN.consentTap2 + 2;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="shrink-0 text-left">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div
+        className="flex w-full min-w-0 flex-col gap-3 pb-1"
+        style={{ transform: `translateY(${-scrollY}px)` }}
+      >
+        <div className="shrink-0 text-left">
           <p className="font-arcade text-[7px] uppercase tracking-wider text-arcade-yellow">
             FINAL REVIEW
           </p>
-          <h2 className="font-arcade text-xs text-foreground">SEAL THE ROM</h2>
-          <span className="font-mono text-[10px] uppercase text-court-muted">
+          <h2 className="mt-1 font-arcade text-xs leading-snug text-foreground">
+            SEAL THE ROM
+          </h2>
+          <p className="mt-1 font-mono text-[10px] uppercase text-court-muted">
             Pick the judge&apos;s tone.
-          </span>
+          </p>
         </div>
-      </div>
 
-      <article className="shrink-0 border-4 border-arcade-border bg-black/80 p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-arcade text-[7px] uppercase tracking-wider text-arcade-yellow">
-            MATCH
-          </p>
-          <span className="border-2 border-arcade-border px-2 py-0.5 font-arcade text-[6px] uppercase tracking-wider text-court-muted">
-            {DEMO_CASE.categoryLabel}
-          </span>
-        </div>
-        <h3 className="mt-1 break-words font-mono text-sm font-bold leading-snug line-clamp-2">
-          {DEMO_CASE.title}
-        </h3>
-      </article>
-
-      <div className="grid min-h-0 shrink-0 gap-2">
-        <article className="border-4 border-arcade-blue/40 bg-arcade-blue/5 p-3">
-          <p className="break-words font-arcade text-[7px] uppercase tracking-wider text-arcade-blue">
-            P1 — {DEMO_SIDE_A.name}
-          </p>
-          <p className="mt-1 break-words text-xs leading-relaxed text-foreground/90 line-clamp-3">
-            {DEMO_SIDE_A.argument}
-          </p>
+        <article className="min-w-0 border-4 border-arcade-border bg-black/80 p-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-arcade text-[7px] uppercase tracking-wider text-arcade-yellow">
+              MATCH
+            </p>
+            <span className="max-w-full truncate border-2 border-arcade-border px-2 py-0.5 font-arcade text-[6px] uppercase tracking-wider text-court-muted">
+              {DEMO_CASE.categoryLabel}
+            </span>
+          </div>
+          <h3 className="mt-1 break-all font-mono text-sm font-bold leading-snug">
+            {DEMO_CASE.title}
+          </h3>
         </article>
 
-        <article className="border-4 border-arcade-pink/40 bg-arcade-pink/5 p-3">
-          <p className="break-words font-arcade text-[7px] uppercase tracking-wider text-arcade-pink">
-            P2 — {DEMO_SIDE_B.name}
-          </p>
-          <p className="mt-1 break-words text-xs leading-relaxed text-foreground/90 line-clamp-3">
-            {DEMO_SIDE_B.argument}
-          </p>
-        </article>
-      </div>
+        <div className="grid min-w-0 gap-2">
+          <article className="min-w-0 border-4 border-arcade-blue/40 bg-arcade-blue/5 p-2.5">
+            <p className="break-all font-arcade text-[7px] uppercase tracking-wider text-arcade-blue">
+              P1 — {DEMO_SIDE_A.name}
+            </p>
+            <p className="mt-1 break-all text-xs leading-relaxed text-foreground/90">
+              {DEMO_SIDE_A.argument}
+            </p>
+          </article>
 
-      <div className="min-h-0 shrink-0">
-        <p className="arcade-label mb-2">Judge&apos;s Tone</p>
-        <div className="grid grid-cols-1 gap-2">
-          {VERDICT_TONES.map((tone) => {
-            const selected = tone.value === DEMO_CASE.tone;
-            return (
-              <label
-                key={tone.value}
-                className={[
-                  "touch-target cursor-pointer border-4 p-2",
-                  selected
-                    ? "border-arcade-yellow bg-arcade-yellow/10 neon-glow-yellow"
-                    : "border-arcade-border bg-black",
-                ].join(" ")}
-                style={
-                  selected
-                    ? { transform: `scale(${1 + toneFlash * 0.03})` }
-                    : undefined
-                }
-              >
-                <input
-                  type="radio"
-                  name="tone"
-                  value={tone.value}
-                  checked={selected}
-                  readOnly
-                  className="sr-only"
-                />
-                <p
+          <article className="min-w-0 border-4 border-arcade-pink/40 bg-arcade-pink/5 p-2.5">
+            <p className="break-all font-arcade text-[7px] uppercase tracking-wider text-arcade-pink">
+              P2 — {DEMO_SIDE_B.name}
+            </p>
+            <p className="mt-1 break-all text-xs leading-relaxed text-foreground/90">
+              {DEMO_SIDE_B.argument}
+            </p>
+          </article>
+        </div>
+
+        <div className="min-w-0">
+          <p className="arcade-label mb-2">Judge&apos;s Tone</p>
+          <div className="grid grid-cols-1 gap-2">
+            {VERDICT_TONES.map((tone) => {
+              const selected = tone.value === DEMO_CASE.tone;
+              return (
+                <label
+                  key={tone.value}
                   className={[
-                    "font-arcade text-[8px] uppercase tracking-wider",
-                    selected ? "text-arcade-yellow" : "text-foreground",
+                    "touch-target min-w-0 cursor-pointer border-4 p-2.5",
+                    selected
+                      ? "border-arcade-yellow bg-arcade-yellow/10 neon-glow-yellow"
+                      : "border-arcade-border bg-black",
                   ].join(" ")}
                 >
-                  {tone.label}
-                </p>
-                <p className="mt-0.5 font-mono text-[10px] leading-snug text-court-muted line-clamp-2">
-                  {tone.description}
-                </p>
-              </label>
-            );
-          })}
+                  <input
+                    type="radio"
+                    name="tone"
+                    value={tone.value}
+                    checked={selected}
+                    readOnly
+                    className="sr-only"
+                  />
+                  <p
+                    className={[
+                      "font-arcade text-[8px] uppercase tracking-wider",
+                      selected ? "text-arcade-yellow" : "text-foreground",
+                    ].join(" ")}
+                  >
+                    {tone.label}
+                  </p>
+                  <p className="mt-0.5 font-mono text-[10px] leading-snug text-court-muted line-clamp-2">
+                    {tone.description}
+                  </p>
+                </label>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Jury mode — optional 5-minute crowd court before the AI reveal */}
+        <div className="min-w-0">
+          <p className="arcade-label mb-2">Jury Mode — Optional</p>
+          <label
+            className={[
+              "touch-target flex min-w-0 cursor-pointer items-start gap-3 border-4 p-2.5",
+              juryOn
+                ? "border-court-crimson bg-court-crimson/10 shadow-[0_0_20px_rgba(255,32,64,0.25)]"
+                : "border-arcade-border bg-black",
+            ].join(" ")}
+            style={{ transform: `scale(${1 - juryPress * 0.02})` }}
+          >
+            <input type="checkbox" name="jury_enabled" checked={juryOn} readOnly className="sr-only" />
+            <span
+              aria-hidden
+              className={[
+                "mt-0.5 shrink-0 border-2 px-1.5 py-1 font-arcade text-[7px] tracking-wider",
+                juryOn
+                  ? "border-court-crimson bg-court-crimson text-black"
+                  : "border-arcade-border bg-black text-court-muted",
+              ].join(" ")}
+            >
+              {juryOn ? "ON" : "OFF"}
+            </span>
+            <span className="min-w-0">
+              <span
+                className={[
+                  "block font-arcade text-[8px] uppercase tracking-wider",
+                  juryOn ? "text-court-crimson" : "text-foreground",
+                ].join(" ")}
+              >
+                SUMMON THE JURY ({JURY_WINDOW_MINUTES} MIN)
+              </span>
+              <span className="mt-0.5 block font-mono text-[10px] leading-snug text-court-muted">
+                Seal the AI verdict for {JURY_WINDOW_MINUTES} minutes. Everyone
+                you send the link to must pick a side blind — then the judge
+                enters the court and reveals who was right.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        {/* Consent gate — both boxes are required before the case can be filed */}
+        <fieldset className="min-w-0 border-4 border-arcade-border bg-black/80 p-2.5">
+          <legend className="flex flex-wrap items-center gap-x-2 px-1">
+            <span className="font-arcade text-[7px] uppercase tracking-wider text-arcade-yellow">
+              FINAL CLEARANCE
+            </span>
+            <span className="font-arcade text-[6px] uppercase tracking-wider text-arcade-pink">
+              REQUIRED TO FILE
+            </span>
+          </legend>
+
+          <div className="space-y-2.5">
+            <ConsentCheckboxR checked={consent1} tapFrame={SCREEN.consentTap1}>
+              I confirm I am at least 13 years old and have the right to submit
+              this content.
+            </ConsentCheckboxR>
+
+            <ConsentCheckboxR checked={consent2} tapFrame={SCREEN.consentTap2}>
+              I agree to the{" "}
+              <span className="text-arcade-blue underline decoration-arcade-blue/40 underline-offset-2">
+                Terms of Use
+              </span>{" "}
+              and{" "}
+              <span className="text-arcade-blue underline decoration-arcade-blue/40 underline-offset-2">
+                Community Rules
+              </span>
+              , and I understand BEEF&rsquo;s{" "}
+              <span className="text-arcade-blue underline decoration-arcade-blue/40 underline-offset-2">
+                AI verdict is for entertainment only
+              </span>
+              .
+            </ConsentCheckboxR>
+          </div>
+        </fieldset>
       </div>
     </div>
   );
@@ -526,7 +664,10 @@ export function WizardScreen() {
       <TapIndicator x={196} y={748} tapFrame={SCREEN.disputeContinueTap} />
       <TapIndicator x={196} y={748} tapFrame={SCREEN.sideAContinueTap} />
       <TapIndicator x={196} y={748} tapFrame={SCREEN.sideBContinueTap} />
-      <TapIndicator x={196} y={748} tapFrame={SCREEN.submitTap} />
+      <TapIndicator x={196} y={430} tapFrame={SCREEN.juryToggleTap} />
+      <TapIndicator x={180} y={553} tapFrame={SCREEN.consentTap1} />
+      <TapIndicator x={180} y={653} tapFrame={SCREEN.consentTap2} />
+      <TapIndicator x={196} y={731} tapFrame={SCREEN.submitTap} />
     </div>
   );
 }

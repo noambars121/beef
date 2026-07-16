@@ -12,7 +12,7 @@
     "video:sfx": "node scripts/generate-remotion-sfx.mjs",
     "video:studio": "remotion studio",
     "video:render": "remotion render BeefViralIphoneDemo out/BEEF_iPhone17_Viral_Demo.mp4 --codec=h264",
-    "video:thumbnail": "remotion still BeefViralIphoneDemo out/BEEF_iPhone17_Viral_Thumbnail.png --frame=848"
+    "video:thumbnail": "remotion still BeefViralIphoneDemo out/BEEF_iPhone17_Viral_Thumbnail.png --frame=856"
   },
   "dependencies": {
     "convex": "^1.42.1",

@@ -233,7 +233,7 @@ export function CaseSubmissionForm() {
                 : undefined
             }
             onClick={handleSubmit}
-            className="w-full min-w-0 px-3 text-[9px] sm:w-auto sm:px-8 sm:text-[10px]"
+            className="w-full min-w-0 px-3 text-[9px] sm:order-2 sm:w-auto sm:px-8 sm:text-[10px]"
           >
             <span className="inline-flex max-w-full items-center justify-center gap-2">
               <PixelIcon asset="gavel" size={18} alt="" className="shrink-0" />

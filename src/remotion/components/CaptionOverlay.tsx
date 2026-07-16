@@ -13,6 +13,8 @@ interface CaptionOverlayProps {
   pop?: boolean;
   /** Distance from the top/bottom canvas edge. */
   edgeOffset?: number;
+  /** Optional smaller second line under the main text. */
+  subText?: string;
 }
 
 /** 8-direction black outline + arcade glow, readable with sound off. */
@@ -44,6 +46,7 @@ export function CaptionOverlay({
   fontSize = 46,
   pop = false,
   edgeOffset,
+  subText,
 }: CaptionOverlayProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -81,12 +84,12 @@ export function CaptionOverlay({
     >
       <div
         style={{
-          maxWidth: 980,
+          maxWidth: 1000,
           padding: "0 40px",
           textAlign: "center",
           fontFamily: ARCADE_FONT,
           fontSize,
-          lineHeight: 1.6,
+          lineHeight: 1.55,
           color: "#ffffff",
           letterSpacing: 1,
           textShadow: outlineShadow(accent),
@@ -95,6 +98,18 @@ export function CaptionOverlay({
         }}
       >
         {text}
+        {subText && (
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: Math.round(fontSize * 0.66),
+              color: "#ffffff",
+              textShadow: outlineShadow("#00f0ff"),
+            }}
+          >
+            {subText}
+          </div>
+        )}
       </div>
     </div>
   );

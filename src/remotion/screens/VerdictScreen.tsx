@@ -4,6 +4,7 @@ import { PixelFrame } from "@/components/pixel/PixelFrame";
 import {
   DEMO_BLOWOUT,
   DEMO_CASE,
+  DEMO_JURY,
   DEMO_SCORES,
   DEMO_SIDE_A,
   DEMO_SIDE_B,
@@ -11,6 +12,7 @@ import {
   DEMO_WEIGHTED,
   MAX_WEIGHTED_SCORE,
 } from "../data/demoCase";
+import { AiDisclosureText } from "./JuryTrapScreens";
 import { SCREEN } from "../lib/timeline";
 import { RemotionPixelIcon } from "../components/RemotionPixelIcon";
 import { ScreenBackground } from "../components/StageBackground";
@@ -201,6 +203,77 @@ function FighterCardR({
   );
 }
 
+/**
+ * THE PEOPLE VS THE JUDGE — mirrors PeopleVsJudgePanel in VerdictView.tsx.
+ * Demo tally 2/1 for the winner -> ABSOLUTE CONSENSUS stamp, and the viewer
+ * (the trapped friend) bet on the winner -> "YOU CALLED IT".
+ */
+function PeopleVsJudgePanelR({ revealFrame }: { revealFrame: number }) {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const enter = interpolate(frame, [revealFrame + 12, revealFrame + 24], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  // Stamp: motion scale 1.6 -> 1, rotate -6 -> 0, delay 0.75s
+  const stampIn = spring({
+    frame: frame - (revealFrame + 24),
+    fps,
+    config: { damping: 12, stiffness: 200 },
+    durationInFrames: 16,
+  });
+
+  return (
+    <div
+      className="shrink-0 border-4 border-arcade-green bg-black/70 p-2 shadow-[0_0_20px_rgba(57,255,20,0.2)]"
+      style={{ opacity: enter, transform: `translateY(${(1 - enter) * 8}px)` }}
+    >
+      <div className="flex flex-col gap-1 border-b-2 border-dotted border-arcade-border pb-1.5">
+        <span className="font-arcade text-[6px] uppercase tracking-wider text-foreground/85">
+          THE PEOPLE VS THE JUDGE · {DEMO_JURY.jurors} JURORS
+        </span>
+        <span
+          className="font-arcade text-[8px] uppercase tracking-widest text-arcade-green"
+          style={{
+            opacity: Math.min(1, stampIn * 1.4),
+            transform: `scale(${1.6 - stampIn * 0.6}) rotate(${-6 + stampIn * 6}deg)`,
+            transformOrigin: "left center",
+          }}
+        >
+          ABSOLUTE CONSENSUS
+        </span>
+      </div>
+
+      <p className="mt-1.5 font-arcade text-[6px] leading-relaxed uppercase tracking-wider text-arcade-green">
+        THE PEOPLE ({DEMO_JURY.pctA}%) AND THE JUDGE STAND AS ONE.
+      </p>
+
+      <div className="mt-1.5 flex h-3 w-full overflow-hidden border-2 border-arcade-border bg-black">
+        <div className="h-full bg-arcade-blue" style={{ width: `${DEMO_JURY.pctA * enter}%` }} />
+        <div className="h-full bg-arcade-pink" style={{ width: `${DEMO_JURY.pctB * enter}%` }} />
+      </div>
+      <div className="mt-1 flex items-center justify-between font-mono text-[9px] uppercase">
+        <span className="truncate pr-2 text-arcade-blue">
+          {DEMO_JURY.pctA}% {DEMO_SIDE_A.name}
+        </span>
+        <span className="truncate pl-2 text-arcade-pink">
+          {DEMO_JURY.pctB}% {DEMO_SIDE_B.name}
+        </span>
+      </div>
+
+      <div className="mt-1.5 space-y-0.5 border-t-2 border-dotted border-arcade-border pt-1 text-center">
+        <p className="font-arcade text-[7px] uppercase tracking-wider text-arcade-green">
+          YOU CALLED IT — JUDGE MATERIAL
+        </p>
+        <p className="font-arcade text-[6px] uppercase tracking-wider text-court-muted">
+          YOU WERE WITH THE {DEMO_JURY.pctA}% MAJORITY
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /** K.O. reveal overlay — mirrors the isSlamming overlay in VerdictView.tsx. */
 function KoOverlay() {
   const frame = useCurrentFrame();
@@ -341,7 +414,7 @@ export function VerdictScreen() {
   const scrollY = interpolate(
     frame,
     [SCREEN.scrollStart, SCREEN.scrollEnd],
-    [0, 210],
+    [0, 385],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
@@ -502,6 +575,9 @@ export function VerdictScreen() {
                         {DEMO_VERDICT.full_reasoning}
                       </p>
                     </div>
+
+                    {/* THE PEOPLE VS THE JUDGE — crowd consensus vs AI ruling */}
+                    <PeopleVsJudgePanelR revealFrame={reveal} />
                   </div>
 
                   {/* Reactions + actions */}
@@ -561,7 +637,10 @@ export function VerdictScreen() {
 
               {/* Footer */}
               <footer className="relative shrink-0 border-t-4 border-arcade-border bg-black/40 px-3 py-1.5 text-center">
-                <p className="break-all font-arcade text-[6px] uppercase tracking-wider text-foreground/80">
+                <p>
+                  <AiDisclosureText />
+                </p>
+                <p className="mt-1 break-all font-arcade text-[6px] uppercase tracking-wider text-foreground/80">
                   CASE_#0042 · {DEMO_SIDE_A.name} WINS · SHAME_HEAT_28 · COIN_OP_SYSTEM
                 </p>
                 <div className="mt-1">
@@ -591,9 +670,9 @@ export function VerdictScreen() {
       />
 
       {/* Tap choreography */}
-      <TapIndicator x={196} y={516} tapFrame={SCREEN.tapLaugh} />
-      <TapIndicator x={85} y={516} tapFrame={SCREEN.tapShock} />
-      <TapIndicator x={196} y={718} tapFrame={SCREEN.tapShare} />
+      <TapIndicator x={196} y={491} tapFrame={SCREEN.tapLaugh} />
+      <TapIndicator x={83} y={491} tapFrame={SCREEN.tapShock} />
+      <TapIndicator x={196} y={692} tapFrame={SCREEN.tapShare} />
     </div>
   );
 }

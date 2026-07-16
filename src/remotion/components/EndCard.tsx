@@ -35,7 +35,7 @@ export function EndCard() {
   const titleIn = pop(0);
   const line1In = pop(10);
   const line2In = pop(18);
-  const smallIn = interpolate(frame, [base + 34, base + 46], [0, 1], {
+  const smallIn = interpolate(frame, [base + 26, base + 38], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
