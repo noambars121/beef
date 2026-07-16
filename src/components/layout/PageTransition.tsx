@@ -51,9 +51,8 @@ function PageChrome({ children }: { children: ReactNode }) {
       </div>
 
       <div className={isHome ? "flex h-full min-h-0 flex-col" : "flex min-h-full flex-col"}>
-        <div className="min-h-0 flex-1">{children}</div>
-        {/* Home stays above the fold — legal links live on other pages */}
-        {!isHome ? <SiteFooter /> : null}
+        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+        <SiteFooter compact={isHome} />
       </div>
     </div>
   );
