@@ -32,6 +32,13 @@ export const sideScores = v.object({
   evidence: v.number(),
 });
 
+/** Lifecycle of the on-chain seal on Monad testnet. */
+export const monadSealStatus = v.union(
+  v.literal("pending"),
+  v.literal("sealed"),
+  v.literal("failed")
+);
+
 export const verdictScores = v.object({
   A: sideScores,
   B: sideScores,
@@ -96,6 +103,12 @@ export default defineSchema({
     share_image_url: v.string(),
     scores: v.optional(verdictScores),
     shame_score: v.optional(v.number()),
+    // ---- Monad on-chain court record (BeefVerdictRegistry) ----
+    /** Absent on verdicts sealed before the on-chain rollout. */
+    monad_status: v.optional(monadSealStatus),
+    monad_tx_hash: v.optional(v.string()),
+    monad_block_number: v.optional(v.number()),
+    monad_sealed_at: v.optional(v.number()),
   }).index("by_case", ["case_id"]),
 
   appeals: defineTable({
@@ -106,6 +119,9 @@ export default defineSchema({
     roast_line: v.string(),
     share_image_url: v.string(),
     created_at: v.number(),
+    // ---- Monad on-chain overturn record (only for outcome=overturned) ----
+    monad_status: v.optional(monadSealStatus),
+    monad_tx_hash: v.optional(v.string()),
   }).index("by_case", ["case_id"]),
 
   reactions: defineTable({

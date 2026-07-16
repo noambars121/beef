@@ -54,6 +54,9 @@ export function toVerdict(doc: Doc<"verdicts">) {
     share_image_url: doc.share_image_url,
     scores: doc.scores,
     shame_score: doc.shame_score,
+    monad_status: doc.monad_status ?? null,
+    monad_tx_hash: doc.monad_tx_hash ?? null,
+    monad_block_number: doc.monad_block_number ?? null,
   };
 }
 
@@ -67,6 +70,8 @@ export function toAppeal(doc: Doc<"appeals">) {
     roast_line: doc.roast_line,
     share_image_url: doc.share_image_url,
     created_at: new Date(doc.created_at).toISOString(),
+    monad_status: doc.monad_status ?? null,
+    monad_tx_hash: doc.monad_tx_hash ?? null,
   };
 }
 

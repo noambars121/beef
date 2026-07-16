@@ -99,6 +99,7 @@ On submit:
 | Animation | Framer Motion 12 |
 | Styling | Tailwind CSS 3.4 + custom arcade CSS (`globals.css`) |
 | AI | **Cursor Background Agents API** → default model `gemini-3.5-flash` |
+| On-chain | **Monad testnet** (chain 10143) · Solidity `contracts/BeefVerdictRegistry.sol` · viem, server-signed from Convex actions |
 | Fonts | Cinzel (display), DM Sans (body), JetBrains Mono, Press Start 2P (arcade) |
 
 **Important architectural choice:** The UI talks **only to Next.js REST routes**, never directly to Convex hooks. All DB access goes through `src/lib/store/db.ts` (thin `fetchQuery`/`fetchMutation` wrapper).
@@ -171,8 +172,8 @@ All fields use **snake_case** intentionally (future SQL migration). Types in `sr
 | `counters` | Sequential docket numbers | `name`, `value` |
 | `cases` | Core case record | `title`, `category`, `status`, `docket_no`, `owner_session_id`, `viral_rank`, `deliberating`, `appealing`, error columns, `jury_enabled` + `jury_expires_at` (optional; JURY MODE window = created_at + 5 min, `JURY_WINDOW_MS` in `convex/lib.ts`) |
 | `parties` | Side A & B arguments | `case_id`, `side`, `display_name`, `argument_text`, `evidence_summary` |
-| `verdicts` | One per case (idempotent) | `winner_side`, `short_verdict`, `full_reasoning`, `roast_line`, `share_image_url`, optional `scores`, `shame_score` |
-| `appeals` | One per case (idempotent) | `outcome` (upheld/overturned), `plea`, `ruling`, `roast_line`, `share_image_url` |
+| `verdicts` | One per case (idempotent) | `winner_side`, `short_verdict`, `full_reasoning`, `roast_line`, `share_image_url`, optional `scores`, `shame_score`, Monad seal: `monad_status` (pending/sealed/failed), `monad_tx_hash`, `monad_block_number`, `monad_sealed_at` |
+| `appeals` | One per case (idempotent) | `outcome` (upheld/overturned), `plea`, `ruling`, `roast_line`, `share_image_url`, on overturn: `monad_status`, `monad_tx_hash` |
 | `reactions` | Crowd emoji reactions | `type` (shock/laugh/agree), `count` |
 | `crowdVotes` | Pre-reveal predictions | `session_id`, `side` |
 
@@ -234,8 +235,18 @@ All routes: Zod validation, session from cookie, in-memory rate limits, court-th
 - `insertVerdict` — idempotent, closes case
 - `setViralSeed`, `addViralSeedBonus`, `incrementReaction`
 - Appeal locks: `tryLockAppeal`, `unlockAppeal`, `recordAppealError`, `clearAppealError`
-- `insertAppeal` — idempotent
+- `insertAppeal` — idempotent; on `overturned` schedules `recordOverturnOnMonad`
 - `castCrowdVote`
+- Monad seal state: `setVerdictMonadSeal`, `setAppealMonadSeal` (written by `convex/monadActions.ts`)
+
+### On-chain seal flow (`convex/monadActions.ts` + `convex/lib/monadClient.ts`)
+- `insertVerdict` schedules `internal.monadActions.sealVerdictOnMonad` transactionally
+- The action signs `sealVerdict(caseKey, docketNo, winner, scoreA, scoreB, verdictHash)` on `BeefVerdictRegistry` (Monad testnet) with the judge wallet; 3 attempts with backoff, then `monad_status = "failed"`
+- `caseKey = keccak256(caseId)`, `verdictHash = keccak256(short_verdict|roast_line)` — integrity proof of the ruling text
+- Appeal overturns call `overturnVerdict(caseKey)` which flips the winner on-chain
+- UI: `MonadSealBadge` in `VerdictView` shows SEALING… → SEALED · VERIFY TX (explorer link); polls while pending
+- Env (must be set on the **Convex deployment**): `MONAD_JUDGE_PRIVATE_KEY`, `MONAD_REGISTRY_ADDRESS`, optional `MONAD_RPC_URL`
+- Scripts: `npm run chain:wallet` / `chain:compile` / `chain:deploy`
 
 ### Lock semantics
 - `STALE_LOCK_MS = 10 minutes` — crashed deliberation/appeal can be reclaimed
@@ -343,6 +354,11 @@ NEXT_PUBLIC_APP_URL=
 CONVEX_DEPLOYMENT=
 NEXT_PUBLIC_CONVEX_URL=
 NEXT_PUBLIC_CONVEX_SITE_URL=
+
+# Monad on-chain court record — set on the CONVEX deployment (npx convex env set)
+MONAD_JUDGE_PRIVATE_KEY=
+MONAD_REGISTRY_ADDRESS=
+MONAD_RPC_URL=            # optional, defaults to https://testnet-rpc.monad.xyz
 
 # Optional: alternate build dir (Windows .next lock workaround)
 NEXT_DIST_DIR=

@@ -25,6 +25,7 @@ import {
   formatDocketNo,
   getBlowoutTier,
   getCategoryLabel,
+  monadTxUrl,
   partyLabel,
   weightedScore,
 } from "@/types";
@@ -110,12 +111,15 @@ export function VerdictView({ initialData }: VerdictViewProps) {
   const isOpen = data.case.status === "open";
   const juryActive = data.jury.active;
   // Poll while: the judge/appellate court works, the jury window is open
-  // (live crowd heat + the automatic unseal for everyone on the page), or a
-  // non-owner sits on an open case waiting for the verdict to land.
+  // (live crowd heat + the automatic unseal for everyone on the page), a
+  // non-owner sits on an open case waiting for the verdict to land, or the
+  // on-chain Monad seal is still confirming (flips PENDING → SEALED live).
   const shouldPoll =
     juryActive ||
     (isOpen && (data.deliberation.in_progress || !data.viewer.is_owner)) ||
-    data.appeal_state.in_progress;
+    data.appeal_state.in_progress ||
+    data.verdict?.monad_status === "pending" ||
+    data.appeal?.monad_status === "pending";
 
   const refreshEnvelope = useCallback(async () => {
     try {
@@ -892,6 +896,7 @@ export function VerdictView({ initialData }: VerdictViewProps) {
           <p className="mt-1 break-words px-1 font-mono text-[10px] uppercase tracking-wide text-foreground/85 sm:text-xs">
             CASE {docket} · {getCategoryLabel(data.case.category)} · {data.case.title}
           </p>
+          <MonadSealBadge verdict={verdict} appeal={appeal} />
         </header>
 
         {/* Blowout banner — only when the scores justify the drama */}
@@ -1249,6 +1254,81 @@ export function VerdictView({ initialData }: VerdictViewProps) {
         </footer>
       </article>
     </div>
+  );
+}
+
+// ---- Monad on-chain seal badge ----
+
+const MONAD_PURPLE = "#836EF9";
+
+interface MonadSealBadgeProps {
+  verdict: {
+    monad_status?: "pending" | "sealed" | "failed" | null;
+    monad_tx_hash?: string | null;
+  };
+  appeal: {
+    outcome: "upheld" | "overturned";
+    monad_status?: "pending" | "sealed" | "failed" | null;
+    monad_tx_hash?: string | null;
+  } | null;
+}
+
+/**
+ * The permanent court record: every verdict is sealed on Monad testnet.
+ * Links straight to the transaction in the Monad explorer so anyone can
+ * verify the ruling was never edited. Overturns supersede the original seal.
+ */
+function MonadSealBadge({ verdict, appeal }: MonadSealBadgeProps) {
+  const overturn =
+    appeal?.outcome === "overturned" && appeal.monad_tx_hash
+      ? appeal
+      : null;
+  const status = overturn ? overturn.monad_status : verdict.monad_status;
+  const txHash = overturn ? overturn.monad_tx_hash : verdict.monad_tx_hash;
+
+  // Verdicts that predate the on-chain rollout have no record — show nothing.
+  if (!status) return null;
+
+  if (status === "pending") {
+    return (
+      <motion.p
+        animate={{ opacity: [1, 0.5, 1] }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+        className="mt-1.5 inline-flex items-center gap-1.5 border-2 bg-black px-2 py-1 font-arcade text-[7px] uppercase tracking-widest sm:text-[8px]"
+        style={{ borderColor: MONAD_PURPLE, color: MONAD_PURPLE }}
+      >
+        ⛓ SEALING ON MONAD...
+      </motion.p>
+    );
+  }
+
+  if (status === "failed" || !txHash) {
+    return (
+      <p className="mt-1.5 inline-block border-2 border-arcade-border bg-black px-2 py-1 font-arcade text-[7px] uppercase tracking-widest text-court-muted sm:text-[8px]">
+        ⛓ CHAIN SEAL DEFERRED — OFF-CHAIN RECORD ACTIVE
+      </p>
+    );
+  }
+
+  return (
+    <motion.a
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.5, type: "spring", stiffness: 160 }}
+      href={monadTxUrl(txHash)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-1.5 inline-flex items-center gap-1.5 border-2 bg-black px-2 py-1 font-arcade text-[7px] uppercase tracking-widest transition-all hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-[8px]"
+      style={{
+        borderColor: MONAD_PURPLE,
+        color: MONAD_PURPLE,
+        boxShadow: `0 0 12px ${MONAD_PURPLE}55, inset 0 0 8px ${MONAD_PURPLE}22`,
+        textShadow: `0 0 8px ${MONAD_PURPLE}aa`,
+      }}
+    >
+      ⛓ {overturn ? "OVERTURN SEALED ON MONAD" : "VERDICT SEALED ON MONAD"} ·
+      VERIFY TX ↗
+    </motion.a>
   );
 }
 

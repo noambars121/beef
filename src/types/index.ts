@@ -114,6 +114,17 @@ export interface SideScores {
 
 export type VerdictScores = Record<PartySide, SideScores>;
 
+// ---- Monad on-chain court record ----
+
+/** Lifecycle of the on-chain seal (BeefVerdictRegistry on Monad testnet). */
+export type MonadSealStatus = "pending" | "sealed" | "failed";
+
+export const MONAD_EXPLORER_URL = "https://testnet.monadexplorer.com";
+
+export function monadTxUrl(txHash: string): string {
+  return `${MONAD_EXPLORER_URL}/tx/${txHash}`;
+}
+
 export interface Verdict {
   id: string;
   case_id: string;
@@ -129,6 +140,11 @@ export interface Verdict {
   scores?: VerdictScores;
   /** AI-assessed shamefulness of the dispute, 0-100. Seeds viral_rank. */
   shame_score?: number;
+  /** On-chain seal state; null for verdicts predating the Monad rollout. */
+  monad_status?: MonadSealStatus | null;
+  /** Monad testnet transaction hash of the seal, once landed. */
+  monad_tx_hash?: string | null;
+  monad_block_number?: number | null;
 }
 
 export interface Appeal {
@@ -143,6 +159,9 @@ export interface Appeal {
   roast_line: string;
   share_image_url: string;
   created_at: string;
+  /** On-chain overturn record; only set when outcome === "overturned". */
+  monad_status?: MonadSealStatus | null;
+  monad_tx_hash?: string | null;
 }
 
 /** Winner after the appellate court has spoken (appeal may flip the ruling). */

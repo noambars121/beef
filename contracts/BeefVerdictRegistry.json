@@ -1,0 +1,258 @@
+{
+  "contractName": "BeefVerdictRegistry",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadySealed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidRuling",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotSealed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OnlyJudge",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "caseKey",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum BeefVerdictRegistry.Ruling",
+          "name": "newWinner",
+          "type": "uint8"
+        }
+      ],
+      "name": "VerdictOverturned",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "caseKey",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "docketNo",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum BeefVerdictRegistry.Ruling",
+          "name": "winner",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "scoreA",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "scoreB",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "verdictHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "VerdictSealed",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "caseKey",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getVerdict",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint32",
+              "name": "docketNo",
+              "type": "uint32"
+            },
+            {
+              "internalType": "enum BeefVerdictRegistry.Ruling",
+              "name": "winner",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "scoreA",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "scoreB",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "verdictHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint64",
+              "name": "sealedAt",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bool",
+              "name": "overturnedOnAppeal",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct BeefVerdictRegistry.VerdictRecord",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "caseKey",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isSealed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "judge",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "caseKey",
+          "type": "bytes32"
+        }
+      ],
+      "name": "overturnVerdict",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "caseKey",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "docketNo",
+          "type": "uint32"
+        },
+        {
+          "internalType": "enum BeefVerdictRegistry.Ruling",
+          "name": "winner",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "scoreA",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "scoreB",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "verdictHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "sealVerdict",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalOverturned",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalVerdicts",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60a0604052348015600e575f5ffd5b50336080526080516107dd6100385f395f818160f20152818161017301526104b601526107dd5ff3fe608060405234801561000f575f5ffd5b506004361061007a575f3560e01c8063573255f411610058578063573255f4146100ed5780638184717b1461012c578063921232da1461014c578063c860a9d81461015f575f5ffd5b80630646e2be1461007e5780631f5b1245146100c257806350af6e54146100d8575b5f5ffd5b6100ad61008c366004610625565b5f908152600260208190526040909120015467ffffffffffffffff16151590565b60405190151581526020015b60405180910390f35b6100ca5f5481565b6040519081526020016100b9565b6100eb6100e6366004610651565b610168565b005b6101147f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b0390911681526020016100b9565b61013f61013a366004610625565b6103bb565b6040516100b991906106f8565b6100eb61015a366004610625565b6104ab565b6100ca60015481565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146101b15760405163116cd73560e21b815260040160405180910390fd5b5f8460028111156101c4576101c46106c4565b036101e2576040516309efd47960e41b815260040160405180910390fd5b5f868152600260208190526040909120015467ffffffffffffffff161561021c57604051630108cc4760e61b815260040160405180910390fd5b6040518060e001604052808663ffffffff168152602001856002811115610245576102456106c4565b815260ff8086166020808401919091529085166040808401919091526060830185905267ffffffffffffffff421660808401525f60a0909301839052898352600280835292208351815463ffffffff90911663ffffffff198216811783559285015191939192849264ffffffffff1990921617906401000000009084908111156102d1576102d16106c4565b02179055506040828101518254606085015160ff90811666010000000000000266ff000000000000199190931665010000000000021666ffff00000000001990911617178255608083015160018084019190915560a08401516002909301805460c0909501511515600160401b0268ffffffffffffffffff1990951667ffffffffffffffff90941693909317939093179091555f80549092019091555163ffffffff86169087907fc825ebafea4a3e725004980bb1ce9a8d38c26542e36e22eb1c9b6e2a35ba670c906103ab908890889088908890610764565b60405180910390a3505050505050565b6040805160e0810182525f80825260208201819052918101829052606081018290526080810182905260a0810182905260c08101919091525f82815260026020818152604092839020835160e08101909452805463ffffffff8116855290929184019164010000000090910460ff169081111561043a5761043a6106c4565b600281111561044b5761044b6106c4565b8152815460ff650100000000008204811660208401526601000000000000909104811660408301526001830154606083015260029092015467ffffffffffffffff81166080830152600160401b9004909116151560a09091015292915050565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146104f45760405163116cd73560e21b815260040160405180910390fd5b5f818152600260208190526040822090810154909167ffffffffffffffff90911690036105345760405163c1f31ec960e01b815260040160405180910390fd5b6002810154600160401b900460ff161561056157604051630108cc4760e61b815260040160405180910390fd5b60028101805468ff00000000000000001916600160401b17905560018154640100000000900460ff16600281111561059b5761059b6106c4565b146105a75760016105aa565b60025b8154829064ff0000000019166401000000008360028111156105ce576105ce6106c4565b02179055506001805481019055805460405183917fdd2cb2c42c224fac5031ee72640c4f6391b8565eab0aa204ee24e64dcd21843f9161061991640100000000900460ff1690610793565b60405180910390a25050565b5f60208284031215610635575f5ffd5b5035919050565b803560ff8116811461064c575f5ffd5b919050565b5f5f5f5f5f5f60c08789031215610666575f5ffd5b86359550602087013563ffffffff81168114610680575f5ffd5b9450604087013560038110610693575f5ffd5b93506106a16060880161063c565b92506106af6080880161063c565b9598949750929591949360a090920135925050565b634e487b7160e01b5f52602160045260245ffd5b600381106106f457634e487b7160e01b5f52602160045260245ffd5b9052565b815163ffffffff16815260208083015160e0830191610719908401826106d8565b5060ff604084015116604083015260ff60608401511660608301526080830151608083015267ffffffffffffffff60a08401511660a083015260c0830151151560c083015292915050565b6080810161077282876106d8565b60ff8516602083015260ff8416604083015282606083015295945050505050565b602081016107a182846106d8565b9291505056fea26469706673582212208e01130e8fcb5ceab213ebbd37dd4e0afb45296134eb7c993c84f9998542976764736f6c634300081c0033"
+}

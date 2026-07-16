@@ -11,8 +11,11 @@
 import type * as cases from "../cases.js";
 import type * as lib from "../lib.js";
 import type * as lib_cursorClient from "../lib/cursorClient.js";
+import type * as lib_monadClient from "../lib/monadClient.js";
+import type * as lib_openaiClient from "../lib/openaiClient.js";
 import type * as lib_verdictAnalysis from "../lib/verdictAnalysis.js";
 import type * as lib_verdictPrompt from "../lib/verdictPrompt.js";
+import type * as monadActions from "../monadActions.js";
 import type * as reports from "../reports.js";
 import type * as verdictActions from "../verdictActions.js";
 
@@ -26,8 +29,11 @@ declare const fullApi: ApiFromModules<{
   cases: typeof cases;
   lib: typeof lib;
   "lib/cursorClient": typeof lib_cursorClient;
+  "lib/monadClient": typeof lib_monadClient;
+  "lib/openaiClient": typeof lib_openaiClient;
   "lib/verdictAnalysis": typeof lib_verdictAnalysis;
   "lib/verdictPrompt": typeof lib_verdictPrompt;
+  monadActions: typeof monadActions;
   reports: typeof reports;
   verdictActions: typeof verdictActions;
 }>;

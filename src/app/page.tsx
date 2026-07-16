@@ -65,6 +65,18 @@ export default function HomePage() {
         </Link>
       </p>
 
+      {/* On-chain court record — every ruling is sealed on Monad */}
+      <p
+        className="mt-3 inline-flex items-center gap-1.5 border-2 bg-black/70 px-3 py-1.5 font-arcade text-[7px] uppercase tracking-widest sm:text-[8px]"
+        style={{
+          borderColor: "#836EF9",
+          color: "#836EF9",
+          boxShadow: "0 0 12px #836EF955",
+        }}
+      >
+        ⛓ EVERY VERDICT SEALED ON MONAD — TAMPER-PROOF COURT RECORD
+      </p>
+
       {/* Matching stat tiles — same square size */}
       <div className="mt-8 grid w-full max-w-md grid-cols-3 gap-3 px-2 sm:mt-12 sm:max-w-xl sm:gap-6">
         {(
