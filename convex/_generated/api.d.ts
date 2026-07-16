@@ -10,7 +10,11 @@
 
 import type * as cases from "../cases.js";
 import type * as lib from "../lib.js";
+import type * as lib_cursorClient from "../lib/cursorClient.js";
+import type * as lib_verdictAnalysis from "../lib/verdictAnalysis.js";
+import type * as lib_verdictPrompt from "../lib/verdictPrompt.js";
 import type * as reports from "../reports.js";
+import type * as verdictActions from "../verdictActions.js";
 
 import type {
   ApiFromModules,
@@ -21,7 +25,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   cases: typeof cases;
   lib: typeof lib;
+  "lib/cursorClient": typeof lib_cursorClient;
+  "lib/verdictAnalysis": typeof lib_verdictAnalysis;
+  "lib/verdictPrompt": typeof lib_verdictPrompt;
   reports: typeof reports;
+  verdictActions: typeof verdictActions;
 }>;
 
 /**

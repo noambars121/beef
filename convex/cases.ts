@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import {
   internalMutation,
   mutation,
@@ -40,10 +41,15 @@ async function findCase(
   return ctx.db.get(normalized);
 }
 
-// The deliberation loop runs fire-and-forget in the Next process; if that
-// process dies mid-run, the lock would stay set forever. Locks older than
+// Deliberation runs in a Convex action (up to ~10 min). Locks older than
 // this are considered abandoned and may be reclaimed.
 const STALE_LOCK_MS = 10 * 60 * 1000;
+
+const verdictTone = v.union(
+  v.literal("savage"),
+  v.literal("sharp"),
+  v.literal("balanced")
+);
 
 function lockIsStale(startedAt: number | undefined, now: number): boolean {
   return startedAt === undefined || now - startedAt > STALE_LOCK_MS;
@@ -389,70 +395,125 @@ export const listGallery = query({
   },
 });
 
+async function acquireDeliberationLock(
+  ctx: MutationCtx,
+  caseId: string,
+  requesterSessionId?: string
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  const caseDoc = await findCase(ctx, caseId);
+  if (!caseDoc) {
+    return { ok: false as const, error: "Case not found", status: 404 };
+  }
+
+  const existingVerdict = await ctx.db
+    .query("verdicts")
+    .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
+    .unique();
+  if (caseDoc.status === "closed" || existingVerdict) {
+    return {
+      ok: false as const,
+      error: "The verdict has already been delivered",
+      status: 409,
+    };
+  }
+
+  const parties = await ctx.db
+    .query("parties")
+    .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
+    .collect();
+  const hasBothSides =
+    parties.some((p) => p.side === "A") &&
+    parties.some((p) => p.side === "B");
+  if (!hasBothSides) {
+    return {
+      ok: false as const,
+      error: "Case is missing one of its parties",
+      status: 422,
+    };
+  }
+
+  if (
+    caseDoc.owner_session_id &&
+    caseDoc.owner_session_id !== requesterSessionId
+  ) {
+    return {
+      ok: false as const,
+      error: "Only the case filer can summon the judge",
+      status: 403,
+    };
+  }
+
+  const now = Date.now();
+  if (
+    caseDoc.deliberating &&
+    !lockIsStale(caseDoc.deliberation_started_at, now)
+  ) {
+    return {
+      ok: false as const,
+      error: "Deliberation is already in progress",
+      status: 409,
+    };
+  }
+
+  await ctx.db.patch(caseDoc._id, {
+    deliberating: true,
+    deliberation_started_at: now,
+    deliberation_error: null,
+    deliberation_progress: 5,
+    deliberation_phase: "SUMMONING THE JUDGE...",
+  });
+
+  return { ok: true as const };
+}
+
 export const tryLockDeliberation = mutation({
   args: {
     caseId: v.string(),
     requesterSessionId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const caseDoc = await findCase(ctx, args.caseId);
-    if (!caseDoc) {
-      return { ok: false as const, error: "Case not found", status: 404 };
-    }
+    return acquireDeliberationLock(
+      ctx,
+      args.caseId,
+      args.requesterSessionId
+    );
+  },
+});
 
-    const existingVerdict = await ctx.db
-      .query("verdicts")
-      .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
-      .unique();
-    if (caseDoc.status === "closed" || existingVerdict) {
+/** Lock + schedule durable Convex action (serverless-safe). */
+export const enqueueDeliberation = mutation({
+  args: {
+    caseId: v.string(),
+    requesterSessionId: v.optional(v.string()),
+    tone: v.optional(verdictTone),
+  },
+  returns: v.union(
+    v.object({ ok: v.literal(true) }),
+    v.object({
+      ok: v.literal(false),
+      error: v.string(),
+      status: v.number(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    if (!process.env.CURSOR_API_KEY) {
       return {
         ok: false as const,
-        error: "The verdict has already been delivered",
-        status: 409,
+        error: "CURSOR_API_KEY is not configured on the server",
+        status: 503,
       };
     }
 
-    const parties = await ctx.db
-      .query("parties")
-      .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
-      .collect();
-    const hasBothSides =
-      parties.some((p) => p.side === "A") &&
-      parties.some((p) => p.side === "B");
-    if (!hasBothSides) {
-      return {
-        ok: false as const,
-        error: "Case is missing one of its parties",
-        status: 422,
-      };
-    }
+    const lock = await acquireDeliberationLock(
+      ctx,
+      args.caseId,
+      args.requesterSessionId
+    );
+    if (!lock.ok) return lock;
 
-    if (
-      caseDoc.owner_session_id &&
-      caseDoc.owner_session_id !== args.requesterSessionId
-    ) {
-      return {
-        ok: false as const,
-        error: "Only the case filer can summon the judge",
-        status: 403,
-      };
-    }
-
-    const now = Date.now();
-    if (caseDoc.deliberating && !lockIsStale(caseDoc.deliberation_started_at, now)) {
-      return {
-        ok: false as const,
-        error: "Deliberation is already in progress",
-        status: 409,
-      };
-    }
-
-    await ctx.db.patch(caseDoc._id, {
-      deliberating: true,
-      deliberation_started_at: now,
-      deliberation_error: null,
-      deliberation_progress: 5,
-      deliberation_phase: "SUMMONING THE JUDGE...",
+    await ctx.scheduler.runAfter(0, internal.verdictActions.runDeliberation, {
+      caseId: args.caseId,
+      tone: args.tone ?? "savage",
     });
 
     return { ok: true as const };
@@ -642,68 +703,116 @@ export const incrementReaction = mutation({
   },
 });
 
+async function acquireAppealLock(
+  ctx: MutationCtx,
+  caseId: string,
+  requesterSessionId?: string
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  const caseDoc = await findCase(ctx, caseId);
+  if (!caseDoc) {
+    return { ok: false as const, error: "Case not found", status: 404 };
+  }
+
+  const verdictDoc = await ctx.db
+    .query("verdicts")
+    .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
+    .unique();
+  if (caseDoc.status !== "closed" || !verdictDoc) {
+    return {
+      ok: false as const,
+      error: "There is no verdict to appeal yet",
+      status: 409,
+    };
+  }
+
+  const existingAppeal = await ctx.db
+    .query("appeals")
+    .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
+    .unique();
+  if (existingAppeal) {
+    return {
+      ok: false as const,
+      error:
+        "The appellate court has already ruled. There is no third instance.",
+      status: 409,
+    };
+  }
+
+  if (
+    caseDoc.owner_session_id &&
+    caseDoc.owner_session_id !== requesterSessionId
+  ) {
+    return {
+      ok: false as const,
+      error: "Only the case filer can lodge an appeal",
+      status: 403,
+    };
+  }
+
+  const now = Date.now();
+  if (caseDoc.appealing && !lockIsStale(caseDoc.appeal_started_at, now)) {
+    return {
+      ok: false as const,
+      error: "The appeal is already being heard",
+      status: 409,
+    };
+  }
+
+  await ctx.db.patch(caseDoc._id, {
+    appealing: true,
+    appeal_started_at: now,
+    appeal_error: null,
+    appeal_progress: 5,
+    appeal_phase: "FILING THE APPEAL...",
+  });
+
+  return { ok: true as const };
+}
+
 export const tryLockAppeal = mutation({
   args: {
     caseId: v.string(),
     requesterSessionId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const caseDoc = await findCase(ctx, args.caseId);
-    if (!caseDoc) {
-      return { ok: false as const, error: "Case not found", status: 404 };
-    }
+    return acquireAppealLock(ctx, args.caseId, args.requesterSessionId);
+  },
+});
 
-    const verdictDoc = await ctx.db
-      .query("verdicts")
-      .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
-      .unique();
-    if (caseDoc.status !== "closed" || !verdictDoc) {
+/** Lock + schedule durable Convex appeal action (serverless-safe). */
+export const enqueueAppeal = mutation({
+  args: {
+    caseId: v.string(),
+    requesterSessionId: v.optional(v.string()),
+    plea: v.string(),
+  },
+  returns: v.union(
+    v.object({ ok: v.literal(true) }),
+    v.object({
+      ok: v.literal(false),
+      error: v.string(),
+      status: v.number(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    if (!process.env.CURSOR_API_KEY) {
       return {
         ok: false as const,
-        error: "There is no verdict to appeal yet",
-        status: 409,
+        error: "CURSOR_API_KEY is not configured on the server",
+        status: 503,
       };
     }
 
-    const existingAppeal = await ctx.db
-      .query("appeals")
-      .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
-      .unique();
-    if (existingAppeal) {
-      return {
-        ok: false as const,
-        error:
-          "The appellate court has already ruled. There is no third instance.",
-        status: 409,
-      };
-    }
+    const lock = await acquireAppealLock(
+      ctx,
+      args.caseId,
+      args.requesterSessionId
+    );
+    if (!lock.ok) return lock;
 
-    if (
-      caseDoc.owner_session_id &&
-      caseDoc.owner_session_id !== args.requesterSessionId
-    ) {
-      return {
-        ok: false as const,
-        error: "Only the case filer can lodge an appeal",
-        status: 403,
-      };
-    }
-
-    const now = Date.now();
-    if (caseDoc.appealing && !lockIsStale(caseDoc.appeal_started_at, now)) {
-      return {
-        ok: false as const,
-        error: "The appeal is already being heard",
-        status: 409,
-      };
-    }
-
-    await ctx.db.patch(caseDoc._id, {
-      appealing: true,
-      appeal_started_at: now,
-      appeal_error: null,
-      appeal_progress: 5,
-      appeal_phase: "FILING THE APPEAL...",
+    await ctx.scheduler.runAfter(0, internal.verdictActions.runAppeal, {
+      caseId: args.caseId,
+      plea: args.plea,
     });
 
     return { ok: true as const };

@@ -12,6 +12,7 @@ import type {
   Reaction,
   ReactionType,
   Verdict,
+  VerdictTone,
 } from "@/types";
 
 export interface InsertCaseInput {
@@ -234,6 +235,18 @@ export async function acquireDeliberationLock(
   );
 }
 
+export async function enqueueDeliberation(
+  caseId: string,
+  tone?: VerdictTone,
+  requesterSessionId?: string
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  return fetchMutation(
+    api.cases.enqueueDeliberation,
+    { caseId, tone, requesterSessionId },
+    { url: requireConvexUrl() }
+  );
+}
+
 export async function unlockDeliberation(caseId: string): Promise<void> {
   await fetchMutation(
     api.cases.unlockDeliberation,
@@ -280,6 +293,18 @@ export async function acquireAppealLock(
   return fetchMutation(
     api.cases.tryLockAppeal,
     { caseId, requesterSessionId },
+    { url: requireConvexUrl() }
+  );
+}
+
+export async function enqueueAppeal(
+  caseId: string,
+  plea: string,
+  requesterSessionId?: string
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  return fetchMutation(
+    api.cases.enqueueAppeal,
+    { caseId, plea, requesterSessionId },
     { url: requireConvexUrl() }
   );
 }
