@@ -4,11 +4,9 @@ import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { internalAction } from "./_generated/server";
 import {
-  createFollowUpRun,
-  createVerdictAgent,
-  isCursorConfigured,
-  pollRunUntilComplete,
-} from "./lib/cursorClient";
+  completeJudgePrompt,
+  isOpenAIConfigured,
+} from "./lib/openaiClient";
 import {
   computeWeightedScore,
   estimateShameScore,
@@ -38,6 +36,7 @@ const toneValidator = v.union(
 /**
  * Durable deliberation worker. Scheduled from enqueueDeliberation so the
  * Next.js serverless request can return 202 without killing the loop.
+ * Uses OpenAI gpt-5-nano (direct chat completion — seconds, not minutes).
  */
 export const runDeliberation = internalAction({
   args: {
@@ -59,8 +58,8 @@ export const runDeliberation = internalAction({
     };
 
     try {
-      if (!isCursorConfigured()) {
-        throw new Error("CURSOR_API_KEY is not configured on Convex");
+      if (!isOpenAIConfigured()) {
+        throw new Error("OPENAI_API_KEY is not configured on Convex");
       }
 
       await report(12, "READING THE DOCKET...");
@@ -86,7 +85,7 @@ export const runDeliberation = internalAction({
         limit: 3,
       });
 
-      await report(32, "BRIEFING THE JUDGE...");
+      await report(40, "BRIEFING THE JUDGE...");
       const prompt = buildVerdictPrompt(
         caseRecord,
         sideA,
@@ -94,45 +93,24 @@ export const runDeliberation = internalAction({
         args.tone,
         precedents
       );
-      const { agent, run } = await createVerdictAgent(prompt, caseRecord.title);
 
-      let activeRunId = run.id;
       let lastFailure = "";
+      let repairHint: string | undefined;
 
       for (let attempt = 1; attempt <= MAX_ANALYSIS_ATTEMPTS; attempt++) {
-        const pollFloor = attempt === 1 ? 40 : 70 + (attempt - 2) * 6;
-        const pollCeil = attempt === 1 ? 72 : 88;
-
         await report(
-          pollFloor,
+          attempt === 1 ? 55 : 70 + (attempt - 2) * 8,
           attempt === 1
             ? "JUDGE IS THINKING..."
             : `REPAIR PASS ${attempt - 1}/${MAX_ANALYSIS_ATTEMPTS - 1}...`
         );
 
-        const completed = await pollRunUntilComplete(agent.id, activeRunId, {
-          onPoll: async ({ attempt: pollAttempt, maxAttempts, status }) => {
-            const t = pollAttempt / Math.max(1, maxAttempts - 1);
-            const progress =
-              pollFloor + (pollCeil - pollFloor) * Math.min(1, t);
-            const phase =
-              status === "CREATING"
-                ? "SPINNING UP THE BENCH..."
-                : attempt === 1
-                  ? "WEIGHING ARGUMENTS..."
-                  : `REWRITING THE RULING (${attempt - 1})...`;
-            await report(progress, phase);
-          },
+        const raw = await completeJudgePrompt(prompt, {
+          repairOf: repairHint,
         });
 
-        if (completed.status !== "FINISHED" || !completed.result) {
-          throw new Error(
-            `Deliberation ended abnormally (${completed.status})`
-          );
-        }
-
-        await report(attempt === 1 ? 78 : 90, "PARSING THE RULING...");
-        const parsed = parseVerdictAnalysis(completed.result);
+        await report(attempt === 1 ? 82 : 90, "PARSING THE RULING...");
+        const parsed = parseVerdictAnalysis(raw);
 
         if (parsed.ok) {
           await report(92, "SEALING THE VERDICT...");
@@ -170,14 +148,7 @@ export const runDeliberation = internalAction({
         }
 
         lastFailure = parsed.error;
-        if (attempt < MAX_ANALYSIS_ATTEMPTS) {
-          await report(74 + attempt * 4, "JUDGE REJECTED DRAFT — REPAIRING...");
-          const followUp = await createFollowUpRun(
-            agent.id,
-            buildRepairPrompt(parsed.error)
-          );
-          activeRunId = followUp.id;
-        }
+        repairHint = buildRepairPrompt(parsed.error);
       }
 
       throw new Error(
@@ -221,8 +192,8 @@ export const runAppeal = internalAction({
     };
 
     try {
-      if (!isCursorConfigured()) {
-        throw new Error("CURSOR_API_KEY is not configured on Convex");
+      if (!isOpenAIConfigured()) {
+        throw new Error("OPENAI_API_KEY is not configured on Convex");
       }
 
       await report(12, "OPENING THE APPELLATE DOCKET...");
@@ -247,7 +218,7 @@ export const runAppeal = internalAction({
 
       const appellantSide = verdict.winner_side === "A" ? "B" : "A";
 
-      await report(28, "BRIEFING THE APPELLATE BENCH...");
+      await report(40, "BRIEFING THE APPELLATE BENCH...");
       const prompt = buildAppealPrompt(
         caseRecord,
         sideA,
@@ -257,46 +228,24 @@ export const runAppeal = internalAction({
         args.plea,
         "savage"
       );
-      const { agent, run } = await createVerdictAgent(
-        prompt,
-        `Appeal: ${caseRecord.title.slice(0, 70)}`
-      );
 
-      let activeRunId = run.id;
       let lastFailure = "";
+      let repairHint: string | undefined;
 
       for (let attempt = 1; attempt <= MAX_ANALYSIS_ATTEMPTS; attempt++) {
-        const pollFloor = attempt === 1 ? 40 : 70 + (attempt - 2) * 6;
-        const pollCeil = attempt === 1 ? 72 : 88;
-
         await report(
-          pollFloor,
+          attempt === 1 ? 55 : 70 + (attempt - 2) * 8,
           attempt === 1
             ? "APPELLATE COURT DELIBERATING..."
             : `APPEAL REPAIR ${attempt - 1}/${MAX_ANALYSIS_ATTEMPTS - 1}...`
         );
 
-        const completed = await pollRunUntilComplete(agent.id, activeRunId, {
-          onPoll: async ({ attempt: pollAttempt, maxAttempts, status }) => {
-            const t = pollAttempt / Math.max(1, maxAttempts - 1);
-            const progress =
-              pollFloor + (pollCeil - pollFloor) * Math.min(1, t);
-            const phase =
-              status === "CREATING"
-                ? "CONVENING THE PANEL..."
-                : "HEARING THE APPEAL...";
-            await report(progress, phase);
-          },
+        const raw = await completeJudgePrompt(prompt, {
+          repairOf: repairHint,
         });
 
-        if (completed.status !== "FINISHED" || !completed.result) {
-          throw new Error(
-            `Appeal hearing ended abnormally (${completed.status})`
-          );
-        }
-
-        await report(attempt === 1 ? 78 : 90, "READING THE APPELLATE RULING...");
-        const parsed = parseAppealAnalysis(completed.result);
+        await report(attempt === 1 ? 82 : 90, "READING THE APPELLATE RULING...");
+        const parsed = parseAppealAnalysis(raw);
 
         if (parsed.ok) {
           await report(92, "ENTERING THE APPEAL...");
@@ -331,14 +280,7 @@ export const runAppeal = internalAction({
         }
 
         lastFailure = parsed.error;
-        if (attempt < MAX_ANALYSIS_ATTEMPTS) {
-          await report(74 + attempt * 4, "APPEAL DRAFT REJECTED — REPAIRING...");
-          const followUp = await createFollowUpRun(
-            agent.id,
-            buildAppealRepairPrompt(parsed.error)
-          );
-          activeRunId = followUp.id;
-        }
+        repairHint = buildAppealRepairPrompt(parsed.error);
       }
 
       throw new Error(

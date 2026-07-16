@@ -11,6 +11,7 @@ import type { Doc } from "./_generated/dataModel";
 import {
   appealOutcome,
   caseCategory,
+  monadSealStatus,
   partySide,
   reactionType,
   verdictScores,
@@ -496,10 +497,10 @@ export const enqueueDeliberation = mutation({
     })
   ),
   handler: async (ctx, args) => {
-    if (!process.env.CURSOR_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return {
         ok: false as const,
-        error: "CURSOR_API_KEY is not configured on the server",
+        error: "OPENAI_API_KEY is not configured on the server",
         status: 503,
       };
     }
@@ -604,6 +605,7 @@ export const insertVerdict = mutation({
       share_image_url: args.share_image_url,
       scores: args.scores,
       shame_score: args.shame_score,
+      monad_status: "pending",
     });
 
     await ctx.db.patch(caseId, {
@@ -613,8 +615,67 @@ export const insertVerdict = mutation({
       last_activity_at: now,
     });
 
+    // Seal the ruling on Monad testnet. Scheduled transactionally with the
+    // insert — the on-chain court record fires exactly once per verdict.
+    await ctx.scheduler.runAfter(0, internal.monadActions.sealVerdictOnMonad, {
+      caseId: args.caseId,
+    });
+
     const verdictDoc = await ctx.db.get(verdictId);
     return toVerdict(verdictDoc!);
+  },
+});
+
+/** Persist the outcome of the on-chain seal attempt (from monadActions). */
+export const setVerdictMonadSeal = mutation({
+  args: {
+    caseId: v.string(),
+    status: monadSealStatus,
+    tx_hash: v.optional(v.string()),
+    block_number: v.optional(v.number()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const caseDoc = await findCase(ctx, args.caseId);
+    if (!caseDoc) return null;
+    const verdictDoc = await ctx.db
+      .query("verdicts")
+      .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
+      .unique();
+    if (!verdictDoc) return null;
+    await ctx.db.patch(verdictDoc._id, {
+      monad_status: args.status,
+      ...(args.tx_hash !== undefined ? { monad_tx_hash: args.tx_hash } : {}),
+      ...(args.block_number !== undefined
+        ? { monad_block_number: args.block_number }
+        : {}),
+      ...(args.status === "sealed" ? { monad_sealed_at: Date.now() } : {}),
+    });
+    return null;
+  },
+});
+
+/** Persist the on-chain overturn record (from monadActions). */
+export const setAppealMonadSeal = mutation({
+  args: {
+    caseId: v.string(),
+    status: monadSealStatus,
+    tx_hash: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const caseDoc = await findCase(ctx, args.caseId);
+    if (!caseDoc) return null;
+    const appealDoc = await ctx.db
+      .query("appeals")
+      .withIndex("by_case", (q) => q.eq("case_id", caseDoc._id))
+      .unique();
+    if (!appealDoc) return null;
+    await ctx.db.patch(appealDoc._id, {
+      monad_status: args.status,
+      ...(args.tx_hash !== undefined ? { monad_tx_hash: args.tx_hash } : {}),
+    });
+    return null;
   },
 });
 
@@ -795,10 +856,10 @@ export const enqueueAppeal = mutation({
     })
   ),
   handler: async (ctx, args) => {
-    if (!process.env.CURSOR_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return {
         ok: false as const,
-        error: "CURSOR_API_KEY is not configured on the server",
+        error: "OPENAI_API_KEY is not configured on the server",
         status: 503,
       };
     }
@@ -899,6 +960,9 @@ export const insertAppeal = mutation({
       roast_line: args.roast_line,
       share_image_url: args.share_image_url,
       created_at: now,
+      ...(args.outcome === "overturned"
+        ? { monad_status: "pending" as const }
+        : {}),
     });
 
     await ctx.db.patch(caseId, {
@@ -906,6 +970,15 @@ export const insertAppeal = mutation({
       appeal_error: null,
       last_activity_at: now,
     });
+
+    // An overturn flips the on-chain record too (upheld appeals change nothing).
+    if (args.outcome === "overturned") {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.monadActions.recordOverturnOnMonad,
+        { caseId: args.caseId }
+      );
+    }
 
     const appealDoc = await ctx.db.get(appealId);
     return toAppeal(appealDoc!);
