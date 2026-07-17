@@ -1,50 +1,67 @@
-# BEEF — AI Judge with an On-Chain Court Record on Monad
+# BEEF ⚖️
 
-> **Settle arguments with AI. Two sides. One verdict. Zero mercy. Sealed on Monad forever.**
+> **Stop arguing in group chats. Use BEEF.**
 
-**Live demo:** https://beefjudge.vercel.app
+BEEF is a social **Crowd Court for Petty Debates**. Submit both sides, share the case link, and make the group pick a side before the AI judge’s verdict is revealed.
 
-BEEF is a viral, arcade-themed web app where two people submit both sides of an argument and an AI judge delivers a dramatic verdict — scores, reasoning, and a "fatal roast." Every ruling is then **sealed on Monad testnet** as a permanent, tamper-proof court record.
+The verdict is permanently sealed on Monad Testnet, creating a tamper-evident court record.
 
-## The on-chain component (Monad)
+**Hackathon:** Spark / Build Anything
 
-Contract: [`contracts/BeefVerdictRegistry.sol`](contracts/BeefVerdictRegistry.sol) — **live on Monad testnet** (chain id `10143`):
+## Live App
 
-- **Registry address:** [`0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa`](https://testnet.monadexplorer.com/address/0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa)
-- **Example sealed verdict:** [case #0021 seal tx](https://testnet.monadexplorer.com/tx/0x1536e1e9d60a099630f0bfc8f099e00c48f26cc7444e881a8496c26081971c63)
+[Open BEEF](https://sendbeef.vercel.app/)
 
-The flow:
+## How It Works
 
-1. The AI judge (Cursor agent running Gemini) delivers a verdict; it is stored in Convex.
-2. A Convex action immediately signs a `sealVerdict` transaction with the server "judge wallet" and writes to the registry on Monad:
-   - `caseKey` — keccak256 of the case id
-   - `docketNo`, winner (`SideA`/`SideB`), weighted judge scores
-   - `verdictHash` — keccak256 of the ruling + roast text, so anyone can prove the ruling was never edited after the fact
-3. The case page shows **"⛓ VERDICT SEALED ON MONAD — VERIFY TX"** linking to the transaction on the [Monad explorer](https://testnet.monadexplorer.com).
-4. If the appellate court overturns a ruling, `overturnVerdict` flips the winner **on-chain** too, and the badge links to the overturn transaction.
+1. Create a case and submit both sides of the argument.
+2. Share the case link with the group chat.
+3. Friends vote before they can see the verdict.
+4. The AI judge delivers a verdict, reasoning, scores, and a roast.
+5. The final ruling is sealed on Monad Testnet.
 
-Why it fits: BEEF verdicts are theatrical but final — "no take-backs" is the whole point. The blockchain makes that literal: the judge cannot quietly rewrite history, because the record lives on Monad, not in our database.
+## Why Monad
 
-## Everything else
+BEEF is built around dramatic finality: once the court rules, there are no take-backs.
 
-- **THE TRAP** — visitors must pick a side before the verdict unseals (arguments blurred until you commit)
-- **JURY MODE** — optional 5-minute crowd court: everyone bets blind, then the judge enters
-- **THE PEOPLE VS THE JUDGE** — crowd consensus vs the AI ruling (consensus / crowd-was-wrong / hung jury)
-- **Appeals** — the losing side gets one appellate plea; overturns flip the verdict (and the chain record)
-- **Hall of Shame** — closed cases ranked by time-decayed heat
-- Share cards, OG images, reactions, roast lines — built to be screenshotted
+Each sealed verdict records an onchain reference to the case, winner, judge scores, and a hash of the verdict text. This means the ruling can be verified as unchanged after it is issued.
 
-## Tech stack
+- **Network:** Monad Testnet
+- **Chain ID:** `10143`
+- **Registry contract:** `0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa`
+- **Contract source:** [`contracts/BeefVerdictRegistry.sol`](contracts/BeefVerdictRegistry.sol)
+
+### What gets sealed
+
+A Convex action signs a `sealVerdict` transaction with the server judge wallet and writes:
+
+- `caseKey` — keccak256 of the case id
+- `docketNo`, winner (`SideA` / `SideB`), weighted judge scores
+- `verdictHash` — keccak256 of the ruling + roast text
+
+If an appeal overturns a ruling, `overturnVerdict` flips the winner onchain as well. Case pages link to the Monad explorer so anyone can verify the record.
+
+## Core Mechanics
+
+- **Pick Before You Peek:** voters must choose a side before the verdict unseals.
+- **Crowd Court:** an optional timed jury mode for group participation.
+- **The People vs. The Judge:** compare crowd consensus against the AI ruling.
+- **Appeals:** the losing side gets one appeal path.
+- **Onchain Verdict Sealing:** verdict records are sealed on Monad Testnet.
+- **Shareable Cases:** designed for group chats, reactions, screenshots, and rematches.
+- **Hall of Shame:** closed cases ranked by time-decayed heat.
+
+## Tech Stack
 
 | Layer | Choice |
 |-------|--------|
 | Framework | Next.js 14 (App Router) + TypeScript + Tailwind |
 | Backend / DB | Convex (durable actions run the AI judge + chain seals) |
-| AI judge | Cursor Cloud Agents API (Gemini) |
-| On-chain | Solidity 0.8.28 on **Monad testnet**, viem, server-signed txs |
-| Video | Remotion (demo video rendered from the app's real design system) |
+| Verdict engine | OpenAI **gpt-5-nano** |
+| Onchain | Solidity 0.8.28 on **Monad Testnet**, viem, server-signed txs |
+| Video | Remotion (demo video from the app’s design system) |
 
-## Running locally
+## Running Locally
 
 ```bash
 npm install
@@ -55,12 +72,12 @@ npm run dev             # frontend (terminal 2)
 `.env.local` (see `.env.example`):
 
 ```
-CURSOR_API_KEY=...             # AI judge
+OPENAI_API_KEY=...             # AI judge (defaults to gpt-5-nano)
 MONAD_JUDGE_PRIVATE_KEY=0x...  # server wallet that signs seals
 MONAD_REGISTRY_ADDRESS=0x...   # deployed BeefVerdictRegistry
 ```
 
-Set the same Monad vars on the Convex deployment (`npx convex env set`) — the sealing runs in Convex actions, not in Next.js.
+Set the same Monad vars (and `OPENAI_API_KEY`) on the Convex deployment (`npx convex env set`) — sealing and verdict generation run in Convex actions, not in Next.js.
 
 ### Deploying the contract
 
@@ -68,11 +85,11 @@ Set the same Monad vars on the Convex deployment (`npx convex env set`) — the 
 npm run chain:wallet    # generate the judge wallet (prints address)
 # fund it at https://faucet.monad.xyz
 npm run chain:compile   # solc → contracts/BeefVerdictRegistry.json
-npm run chain:deploy    # deploy to Monad testnet, prints the address
+npm run chain:deploy    # deploy to Monad Testnet, prints the address
 ```
 
-## Architecture notes
+## Architecture Notes
 
-- No user accounts: anonymous browser sessions identify case owners, voters and rate-limit buckets. No user ever needs a wallet — the app signs all chain writes, so the on-chain record is invisible-infra, not a UX tax.
-- Verdict generation and chain sealing both run as **durable Convex actions**, scheduled transactionally with the verdict insert — a serverless request dying cannot lose a seal.
-- Chain writes are retried 3× and the UI reports the truth: `SEALING ON MONAD…` → `SEALED · VERIFY TX` (or a graceful off-chain fallback if the RPC is down).
+- No user accounts: anonymous browser sessions identify case owners, voters, and rate-limit buckets. Users never need a wallet — the app signs all chain writes.
+- Verdict generation and chain sealing both run as **durable Convex actions**, scheduled transactionally with the verdict insert.
+- Chain writes are retried and the UI reports seal status (`SEALING` → `SEALED · VERIFY TX`, or a graceful off-chain fallback if the RPC is down).
