@@ -46,72 +46,72 @@ interface CamKey {
 }
 
 const CAM: CamKey[] = [
-  // Entrance
-  { f: 0, s: 0.58, y: 600, rz: -10, ry: 24 },
-  { f: 34, s: 0.66, y: 170, rz: -5, ry: 13 },
-  { f: 72, s: 0.7, y: 54, rz: -2, ry: 5 },
-  { f: 92, s: 0.73, y: 44, rz: -1, ry: 2 },
-  { f: 108, s: 0.8, y: 0, rz: 0, ry: 0 },
-  // Title typing punch
-  { f: 124, s: 0.84, y: 0, rz: 0, ry: 0 },
-  { f: 172, s: 0.84, y: 0, rz: 0, ry: 0 },
-  { f: 184, s: 0.8, y: 0, rz: 0, ry: 0 },
-  // "TWO SIDES ENTER." band (top)
-  { f: 206, s: 0.78, y: 36, rz: 0, ry: 0 },
-  { f: 234, s: 0.78, y: 36, rz: 0, ry: 0 },
+  // Entrance — slow glide in
+  { f: 0, s: 0.58, y: 600, rz: -8, ry: 20 },
+  { f: 40, s: 0.66, y: 160, rz: -4, ry: 10 },
+  { f: 78, s: 0.72, y: 48, rz: -1.5, ry: 3 },
+  { f: 100, s: 0.76, y: 36, rz: -0.5, ry: 1 },
+  { f: 112, s: 0.8, y: 0, rz: 0, ry: 0 },
+  // Title typing — gentle punch
+  { f: 126, s: 0.83, y: 0, rz: 0, ry: 0 },
+  { f: 172, s: 0.83, y: 0, rz: 0, ry: 0 },
+  { f: 186, s: 0.8, y: 0, rz: 0, ry: 0 },
+  // "TWO SIDES ENTER." band (top) — room for large captions
+  { f: 206, s: 0.76, y: 56, rz: 0, ry: 0 },
+  { f: 238, s: 0.76, y: 56, rz: 0, ry: 0 },
   // Side A argument punch
-  { f: 242, s: 0.84, y: 0, rz: 0, ry: 0 },
-  { f: 276, s: 0.84, y: 0, rz: 0, ry: 0 },
-  { f: 284, s: 0.8, y: 0, rz: 0, ry: 0 },
+  { f: 244, s: 0.83, y: 0, rz: 0, ry: 0 },
+  { f: 276, s: 0.83, y: 0, rz: 0, ry: 0 },
+  { f: 286, s: 0.8, y: 0, rz: 0, ry: 0 },
   // Side B typing punch
-  { f: 292, s: 0.83, y: 0, rz: 0, ry: 0 },
-  { f: 352, s: 0.83, y: 0, rz: 0, ry: 0 },
+  { f: 294, s: 0.82, y: 0, rz: 0, ry: 0 },
+  { f: 352, s: 0.82, y: 0, rz: 0, ry: 0 },
   // "ONE EGO LEAVES DAMAGED." band (top)
-  { f: 360, s: 0.78, y: 36, rz: 0, ry: 0 },
-  { f: 386, s: 0.78, y: 36, rz: 0, ry: 0 },
+  { f: 360, s: 0.76, y: 56, rz: 0, ry: 0 },
+  { f: 390, s: 0.76, y: 56, rz: 0, ry: 0 },
   // Review scan + taps
-  { f: 394, s: 0.82, y: 0, rz: 0, ry: 0 },
-  { f: 452, s: 0.82, y: 0, rz: 0, ry: 0 },
-  { f: 462, s: 0.8, y: 0, rz: 0, ry: 0 },
+  { f: 396, s: 0.81, y: 0, rz: 0, ry: 0 },
+  { f: 452, s: 0.81, y: 0, rz: 0, ry: 0 },
+  { f: 464, s: 0.8, y: 0, rz: 0, ry: 0 },
   // "NEW: JURY MODE" band (top, two lines)
-  { f: 472, s: 0.78, y: 64, rz: 0, ry: 0 },
-  { f: 548, s: 0.78, y: 64, rz: 0, ry: 0 },
+  { f: 472, s: 0.76, y: 88, rz: 0, ry: 0 },
+  { f: 548, s: 0.76, y: 88, rz: 0, ry: 0 },
   // Phone-swap swing into the friend's phone (THE TRAP)
-  { f: 554, s: 0.79, y: 40, rz: -1.5, ry: 12 },
-  { f: 564, s: 0.77, y: 58, rz: 0.5, ry: -4 },
+  { f: 554, s: 0.78, y: 48, rz: -1.2, ry: 10 },
+  { f: 566, s: 0.76, y: 64, rz: 0.4, ry: -3 },
   // "NEW: THE TRAP" band (top, two lines)
-  { f: 572, s: 0.78, y: 64, rz: 0, ry: 0 },
-  { f: 622, s: 0.78, y: 64, rz: 0, ry: 0 },
+  { f: 572, s: 0.76, y: 88, rz: 0, ry: 0 },
+  { f: 624, s: 0.76, y: 88, rz: 0, ry: 0 },
   // Trap tap
-  { f: 630, s: 0.82, y: 0, rz: 0, ry: 0 },
-  { f: 650, s: 0.82, y: 0, rz: 0, ry: 0 },
+  { f: 632, s: 0.81, y: 0, rz: 0, ry: 0 },
+  { f: 650, s: 0.81, y: 0, rz: 0, ry: 0 },
   // Swing back to the voter's jury box
-  { f: 658, s: 0.79, y: -20, rz: 1, ry: 9 },
+  { f: 658, s: 0.78, y: -24, rz: 0.8, ry: 7 },
   // "5 MINUTES LATER…" band (bottom)
-  { f: 668, s: 0.78, y: -50, rz: 0, ry: 0 },
-  { f: 708, s: 0.78, y: -50, rz: 0, ry: 0 },
+  { f: 668, s: 0.76, y: -72, rz: 0, ry: 0 },
+  { f: 710, s: 0.76, y: -72, rz: 0, ry: 0 },
   // Countdown spin + unseal
-  { f: 718, s: 0.83, y: 0, rz: 0, ry: 0 },
-  { f: 766, s: 0.84, y: 0, rz: 0, ry: 0 },
+  { f: 718, s: 0.82, y: 0, rz: 0, ry: 0 },
+  { f: 766, s: 0.83, y: 0, rz: 0, ry: 0 },
   // K.O. settle to a full-phone beauty shot
-  { f: 786, s: 0.76, y: 0, rz: 0, ry: 0 },
-  // Verdict beauty + "THE COURT HAS SPOKEN." band (bottom)
-  { f: 824, s: 0.74, y: -40, rz: 0, ry: 0 },
-  { f: 888, s: 0.74, y: -40, rz: 0, ry: 0 },
+  { f: 786, s: 0.74, y: 0, rz: 0, ry: 0 },
+  // Verdict beauty + "THE COURT HAS SPOKEN." / Monad band (bottom)
+  { f: 824, s: 0.72, y: -78, rz: 0, ry: 0 },
+  { f: 900, s: 0.72, y: -78, rz: 0, ry: 0 },
   // Verdict read + scroll to reactions/share
-  { f: 906, s: 0.82, y: 0, rz: 0, ry: 0 },
-  { f: 1000, s: 0.82, y: 0, rz: 0, ry: 0 },
+  { f: 908, s: 0.81, y: 0, rz: 0, ry: 0 },
+  { f: 1000, s: 0.81, y: 0, rz: 0, ry: 0 },
   // "SEND THIS TO THE GROUP CHAT" band (bottom)
-  { f: 1008, s: 0.78, y: -52, rz: 0, ry: 0 },
-  { f: 1026, s: 0.78, y: -52, rz: 0, ry: 0 },
+  { f: 1004, s: 0.76, y: -72, rz: 0, ry: 0 },
+  { f: 1032, s: 0.76, y: -72, rz: 0, ry: 0 },
   // HALL OF SHAME: caption band up top, then push in on the board
-  { f: 1040, s: 0.78, y: 64, rz: 0, ry: 0 },
-  { f: 1088, s: 0.78, y: 64, rz: 0, ry: 0 },
-  { f: 1098, s: 0.82, y: 0, rz: 0, ry: 0 },
-  { f: 1118, s: 0.82, y: 0, rz: 0, ry: 0 },
+  { f: 1038, s: 0.76, y: 80, rz: 0, ry: 0 },
+  { f: 1090, s: 0.76, y: 80, rz: 0, ry: 0 },
+  { f: 1100, s: 0.81, y: 0, rz: 0, ry: 0 },
+  { f: 1118, s: 0.81, y: 0, rz: 0, ry: 0 },
   // End pull-back
-  { f: 1140, s: 0.62, y: 140, rz: 2, ry: -7 },
-  { f: 1179, s: 0.55, y: 170, rz: 3.5, ry: -11 },
+  { f: 1140, s: 0.6, y: 140, rz: 1.5, ry: -6 },
+  { f: 1179, s: 0.54, y: 170, rz: 2.5, ry: -9 },
 ];
 
 function camChannel(frame: number, pick: (k: CamKey) => number): number {
@@ -122,7 +122,8 @@ function camChannel(frame: number, pick: (k: CamKey) => number): number {
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-      easing: Easing.inOut(Easing.cubic),
+      // Softer camera — less whip, more cinematic glide
+      easing: Easing.bezier(0.4, 0, 0.2, 1),
     }
   );
 }
@@ -149,19 +150,19 @@ function RouteFade({
     ? interpolate(frame, [appearAt, appearAt + ROUTE_TRANSITION_FRAMES], [0, 1], {
         extrapolateLeft: "clamp",
         extrapolateRight: "clamp",
-        easing: Easing.bezier(0.22, 1, 0.36, 1),
+        easing: Easing.bezier(0.33, 1, 0.68, 1),
       })
     : 1;
   const exit = animateOut
     ? interpolate(frame, [leaveAt - ROUTE_TRANSITION_FRAMES, leaveAt - 1], [1, 0], {
         extrapolateLeft: "clamp",
         extrapolateRight: "clamp",
-        easing: Easing.bezier(0.22, 1, 0.36, 1),
+        easing: Easing.bezier(0.33, 1, 0.68, 1),
       })
     : 1;
 
   const opacity = Math.min(enter, exit);
-  const y = (1 - enter) * 10 + (1 - exit) * -8;
+  const y = (1 - enter) * 14 + (1 - exit) * -10;
 
   return (
     <div
@@ -408,13 +409,13 @@ export function BeefViralIphoneDemo() {
   const margin = Math.max(0, (1920 - DEVICE_H * PHONE_ZOOM * s) / 2);
   const boundedY = Math.max(-margin, Math.min(margin, extraY));
 
-  // Subtle handheld sway (kept inside the margin budget)
-  const swayX = Math.sin(frame * 0.041) * 3 + Math.sin(frame * 0.013) * 2;
-  const swayY = Math.cos(frame * 0.029) * 2;
+  // Subtle handheld sway (kept gentle for a smooth watch)
+  const swayX = Math.sin(frame * 0.032) * 2 + Math.sin(frame * 0.011) * 1.2;
+  const swayY = Math.cos(frame * 0.024) * 1.4;
 
   // Impact shake at the K.O.
   const sinceImpact = frame - SCREEN.koFlash;
-  const impactAmp = sinceImpact >= 0 ? 14 * Math.exp(-sinceImpact / 5.5) : 0;
+  const impactAmp = sinceImpact >= 0 ? 12 * Math.exp(-sinceImpact / 6.5) : 0;
   const shakeX = Math.sin(frame * 2.63) * impactAmp;
   const shakeY = Math.cos(frame * 3.11) * impactAmp;
 
@@ -456,16 +457,16 @@ export function BeefViralIphoneDemo() {
         </div>
       </AbsoluteFill>
 
-      {/* Burned-in captions (sound-off friendly, always in clear bands) */}
-      <CaptionOverlay text={CAPTIONS.hook} from={30} to={86} position="top" accent="#ffe600" fontSize={26} edgeOffset={40} />
-      <CaptionOverlay text={CAPTIONS.twoSides} from={208} to={236} position="top" accent="#00f0ff" fontSize={34} edgeOffset={30} />
-      <CaptionOverlay text={CAPTIONS.oneEgo} from={362} to={388} position="top" accent="#ff007f" fontSize={30} edgeOffset={32} />
-      <CaptionOverlay text={CAPTIONS.newJury} subText={CAPTIONS.crowdFirst} from={476} to={546} position="top" accent="#ff2040" fontSize={38} edgeOffset={26} />
-      <CaptionOverlay text={CAPTIONS.newTrap} subText={CAPTIONS.pickBlind} from={574} to={620} position="top" accent="#ff2040" fontSize={38} edgeOffset={26} />
-      <CaptionOverlay text={CAPTIONS.fiveMinLater} from={670} to={706} position="bottom" accent="#ffe600" fontSize={32} edgeOffset={34} pop />
-      <CaptionOverlay text={CAPTIONS.courtSpoken} from={828} to={886} position="bottom" accent="#ffe600" fontSize={32} edgeOffset={34} />
-      <CaptionOverlay text={CAPTIONS.sendIt} from={1006} to={1028} position="bottom" accent="#ff007f" fontSize={27} edgeOffset={36} pop />
-      <CaptionOverlay text={CAPTIONS.hall} from={1042} to={1088} position="top" accent="#ff007f" fontSize={30} edgeOffset={32} />
+      {/* Burned-in captions — large, sound-off friendly */}
+      <CaptionOverlay text={CAPTIONS.hook} from={28} to={90} position="top" accent="#ffe600" fontSize={44} edgeOffset={48} />
+      <CaptionOverlay text={CAPTIONS.twoSides} from={206} to={240} position="top" accent="#00f0ff" fontSize={54} edgeOffset={36} />
+      <CaptionOverlay text={CAPTIONS.oneEgo} from={358} to={392} position="top" accent="#ff007f" fontSize={48} edgeOffset={38} />
+      <CaptionOverlay text={CAPTIONS.newJury} subText={CAPTIONS.crowdFirst} from={472} to={550} position="top" accent="#ff2040" fontSize={56} edgeOffset={28} />
+      <CaptionOverlay text={CAPTIONS.newTrap} subText={CAPTIONS.pickBlind} from={570} to={624} position="top" accent="#ff2040" fontSize={56} edgeOffset={28} />
+      <CaptionOverlay text={CAPTIONS.fiveMinLater} from={666} to={710} position="bottom" accent="#ffe600" fontSize={50} edgeOffset={40} pop />
+      <CaptionOverlay text={CAPTIONS.courtSpoken} subText={CAPTIONS.sealedOnChain} from={824} to={900} position="bottom" accent="#ffe600" fontSize={50} edgeOffset={36} />
+      <CaptionOverlay text={CAPTIONS.sendIt} from={1002} to={1032} position="bottom" accent="#ff007f" fontSize={42} edgeOffset={40} pop />
+      <CaptionOverlay text={CAPTIONS.hall} from={1038} to={1094} position="top" accent="#ff007f" fontSize={48} edgeOffset={36} />
 
       <EndCard />
 

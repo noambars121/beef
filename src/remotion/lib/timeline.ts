@@ -22,8 +22,8 @@ export const SCENES = {
 } as const;
 
 // ---- Phone screen content timeline ----
-// Screens crossfade with a fast PageTransition feel (0.33s ≈ 10 frames).
-export const ROUTE_TRANSITION_FRAMES = 10;
+// Screens crossfade with a smooth PageTransition feel (~0.47s).
+export const ROUTE_TRANSITION_FRAMES = 14;
 
 export const SCREEN = {
   // Home

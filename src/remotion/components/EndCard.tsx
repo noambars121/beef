@@ -1,9 +1,9 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { ARCADE_FONT } from "../fonts";
 import { CAPTIONS } from "../data/demoCase";
 import { SCENES } from "../lib/timeline";
 
-function outline(accent: string, o = 4): string {
+function outline(accent: string, o = 5): string {
   const dirs = [
     [o, 0],
     [-o, 0],
@@ -14,7 +14,7 @@ function outline(accent: string, o = 4): string {
     [-o, o],
     [-o, -o],
   ];
-  return `${dirs.map(([dx, dy]) => `${dx}px ${dy}px 0 #000`).join(", ")}, 0 0 30px ${accent}77, 0 0 60px ${accent}44`;
+  return `${dirs.map(([dx, dy]) => `${dx}px ${dy}px 0 #000`).join(", ")}, 0 0 32px ${accent}77, 0 0 64px ${accent}44`;
 }
 
 /** External end-card copy around the floating phone (scene 7). */
@@ -28,16 +28,17 @@ export function EndCard() {
     spring({
       frame: frame - (base + delay),
       fps,
-      config: { damping: 13, stiffness: 140 },
-      durationInFrames: 22,
+      config: { damping: 20, stiffness: 120, mass: 0.9 },
+      durationInFrames: 26,
     });
 
   const titleIn = pop(0);
   const line1In = pop(10);
   const line2In = pop(18);
-  const smallIn = interpolate(frame, [base + 26, base + 38], [0, 1], {
+  const smallIn = interpolate(frame, [base + 26, base + 40], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
   });
 
   // Final neon pulse
@@ -58,11 +59,11 @@ export function EndCard() {
       <div
         style={{
           position: "absolute",
-          top: 108,
+          top: 96,
           left: 0,
           right: 0,
-          fontSize: 118,
-          lineHeight: 1.2,
+          fontSize: 128,
+          lineHeight: 1.15,
           background:
             "linear-gradient(180deg, #ffffff 0%, #ffe600 40%, #ff8000 100%)",
           WebkitBackgroundClip: "text",
@@ -73,8 +74,8 @@ export function EndCard() {
             `drop-shadow(0 0 ${18 + pulse * 22}px rgba(255,230,0,${0.5 + pulse * 0.4}))`,
             `drop-shadow(0 0 ${40 + pulse * 30}px rgba(255,0,127,${0.3 + pulse * 0.25}))`,
           ].join(" "),
-          opacity: Math.min(1, titleIn * 1.3),
-          transform: `scale(${0.8 + titleIn * 0.2})`,
+          opacity: Math.min(1, titleIn * 1.25),
+          transform: `scale(${0.86 + titleIn * 0.14})`,
         }}
       >
         {CAPTIONS.endTitle}
@@ -83,15 +84,17 @@ export function EndCard() {
       <div
         style={{
           position: "absolute",
-          top: 282,
+          top: 268,
           left: 0,
           right: 0,
-          fontSize: 40,
+          padding: "0 24px",
+          fontSize: 48,
+          lineHeight: 1.35,
           color: "#ffffff",
           letterSpacing: 2,
           textShadow: outline("#00f0ff"),
-          opacity: Math.min(1, line1In * 1.3),
-          transform: `translateY(${(1 - line1In) * 24}px)`,
+          opacity: Math.min(1, line1In * 1.25),
+          transform: `translateY(${(1 - line1In) * 20}px)`,
         }}
       >
         {CAPTIONS.endLine1}
@@ -100,15 +103,17 @@ export function EndCard() {
       <div
         style={{
           position: "absolute",
-          top: 352,
+          top: 348,
           left: 0,
           right: 0,
-          fontSize: 40,
+          padding: "0 24px",
+          fontSize: 48,
+          lineHeight: 1.35,
           color: "#ffe600",
           letterSpacing: 2,
           textShadow: outline("#ff007f"),
-          opacity: Math.min(1, line2In * 1.3),
-          transform: `translateY(${(1 - line2In) * 24}px)`,
+          opacity: Math.min(1, line2In * 1.25),
+          transform: `translateY(${(1 - line2In) * 20}px)`,
         }}
       >
         {CAPTIONS.endLine2}
@@ -117,13 +122,15 @@ export function EndCard() {
       <div
         style={{
           position: "absolute",
-          bottom: 64,
+          bottom: 56,
           left: 0,
           right: 0,
-          fontSize: 17,
-          color: "rgba(208, 208, 220, 0.85)",
-          letterSpacing: 3,
-          textShadow: "0 3px 0 #000, 0 0 12px rgba(0,0,0,0.8)",
+          padding: "0 32px",
+          fontSize: 22,
+          lineHeight: 1.4,
+          color: "rgba(208, 208, 220, 0.9)",
+          letterSpacing: 2.5,
+          textShadow: "0 3px 0 #000, 0 0 14px rgba(0,0,0,0.8)",
           opacity: smallIn,
         }}
       >

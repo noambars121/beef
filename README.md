@@ -55,10 +55,10 @@ If an appeal overturns a ruling, `overturnVerdict` flips the winner onchain as w
 
 | Layer | Choice |
 |-------|--------|
-| Framework | Next.js 14 (App Router) + TypeScript + Tailwind |
-| Backend / DB | Convex (durable actions run the AI judge + chain seals) |
-| Verdict engine | OpenAI **gpt-5-nano** |
-| Onchain | Solidity 0.8.28 on **Monad Testnet**, viem, server-signed txs |
+| Framework | **Next.js 14** (App Router) + TypeScript + Tailwind |
+| Backend | **Convex** (durable actions run the AI judge + chain seals) |
+| Onchain | **Monad Testnet** (Solidity 0.8.28, viem, server-signed txs) |
+| AI | OpenAI **gpt-5-nano** |
 | Video | Remotion (demo video from the app’s design system) |
 
 ## Running Locally

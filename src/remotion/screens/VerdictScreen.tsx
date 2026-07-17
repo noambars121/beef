@@ -5,6 +5,7 @@ import {
   DEMO_BLOWOUT,
   DEMO_CASE,
   DEMO_JURY,
+  DEMO_MONAD,
   DEMO_SCORES,
   DEMO_SIDE_A,
   DEMO_SIDE_B,
@@ -12,6 +13,8 @@ import {
   DEMO_WEIGHTED,
   MAX_WEIGHTED_SCORE,
 } from "../data/demoCase";
+
+const MONAD_PURPLE = "#836EF9";
 import { AiDisclosureText } from "./JuryTrapScreens";
 import { SCREEN } from "../lib/timeline";
 import { RemotionPixelIcon } from "../components/RemotionPixelIcon";
@@ -484,6 +487,20 @@ export function VerdictScreen() {
                 </h1>
                 <p className="mt-1 break-words px-1 font-mono text-[10px] uppercase tracking-wide text-foreground/85 line-clamp-1">
                   CASE #0042 · {DEMO_CASE.categoryLabel} · {DEMO_CASE.title}
+                </p>
+                {/* Mirrors MonadSealBadge — sealed verdict on Monad */}
+                <p
+                  className="mt-1.5 inline-flex items-center gap-1.5 border-2 bg-black px-2 py-1 font-arcade text-[7px] uppercase tracking-widest"
+                  style={{
+                    borderColor: MONAD_PURPLE,
+                    color: MONAD_PURPLE,
+                    boxShadow: `0 0 12px ${MONAD_PURPLE}55, inset 0 0 8px ${MONAD_PURPLE}22`,
+                    textShadow: `0 0 8px ${MONAD_PURPLE}aa`,
+                    opacity: headIn,
+                    transform: `scale(${0.92 + headIn * 0.08})`,
+                  }}
+                >
+                  ⛓ VERDICT SEALED ON MONAD · {DEMO_MONAD.txShort} ↗
                 </p>
               </header>
 

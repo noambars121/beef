@@ -6,6 +6,8 @@ import { AppChrome } from "../components/AppChrome";
 import { TapIndicator } from "../components/TapIndicator";
 import { SCREEN_H, SCREEN_W } from "../components/IPhone17Frame";
 
+const MONAD_PURPLE = "#836EF9";
+
 interface HomeScreenProps {
   /** Absolute frame of the CTA tap (Infinity for the end-card home). */
   tapFrame?: number;
@@ -53,25 +55,25 @@ export function HomeScreen({ tapFrame }: HomeScreenProps) {
       <AppChrome />
 
       <main
-        className="page-shell relative z-10 flex h-full flex-col items-center justify-center text-center"
+        className="page-shell-home relative z-10 flex h-full flex-col items-center justify-center text-center"
         style={{ paddingTop: 54 }}
       >
         <p
-          className="font-arcade text-[10px] uppercase tracking-[0.25em] text-arcade-pink"
+          className="font-arcade text-[9px] uppercase tracking-[0.25em] text-arcade-pink"
           style={{ opacity: flashOn ? 1 : 0 }}
         >
           INSERT BEEF TO START
         </p>
 
         <h1
-          className="mt-4 font-arcade text-5xl leading-snug arcade-gradient-text"
+          className="mt-2 font-arcade text-[2.75rem] leading-snug arcade-gradient-text"
           style={{ filter: titleFilter, transform: `translateY(${bobY}px)` }}
         >
           BEEF
         </h1>
 
         <p
-          className="mt-4 px-2 font-mono text-[clamp(0.9rem,4vw,1.25rem)] font-bold uppercase leading-snug tracking-wide"
+          className="mt-2 px-2 font-mono text-[0.95rem] font-bold uppercase leading-snug tracking-wide"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #ffffff 0%, #ffe600 35%, #ffffff 50%, #ff007f 65%, #ffffff 100%)",
@@ -87,8 +89,8 @@ export function HomeScreen({ tapFrame }: HomeScreenProps) {
           <br /> Destroy their ego
         </p>
 
-        {/* Matching CTA buttons — same display size as page.tsx */}
-        <div className="mt-8 flex w-full max-w-sm flex-col items-center gap-4 px-2">
+        {/* Matching CTA buttons — same display size as page.tsx mobile */}
+        <div className="mt-4 flex w-full max-w-sm flex-col items-center gap-2.5 px-2">
           <div
             className="touch-target block"
             style={{
@@ -98,25 +100,43 @@ export function HomeScreen({ tapFrame }: HomeScreenProps) {
           >
             <RemotionPixelIcon
               asset="btnInsert"
-              size={280}
-              height={84}
+              size={240}
+              height={72}
               alt="CALL THE JUDGE"
-              className="h-auto w-[280px] drop-shadow-[0_4px_0_#000]"
+              className="h-auto w-[240px] drop-shadow-[0_4px_0_#000]"
             />
           </div>
           <div className="touch-target block">
             <RemotionPixelIcon
               asset="btnHall"
-              size={280}
-              height={84}
+              size={240}
+              height={72}
               alt="HALL OF SHAME"
-              className="h-auto w-[280px] drop-shadow-[0_4px_0_#000]"
+              className="h-auto w-[240px] drop-shadow-[0_4px_0_#000]"
             />
           </div>
         </div>
 
-        {/* Matching stat tiles — same square size as page.tsx */}
-        <div className="mt-10 grid w-full max-w-md grid-cols-3 gap-3 px-2">
+        <p className="mt-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-court-muted">
+          FOR PETTY DEBATES.{" "}
+          <span className="text-arcade-blue underline decoration-arcade-blue/40 underline-offset-4">
+            NOT SERIOUS DISPUTES.
+          </span>
+        </p>
+
+        <p
+          className="mt-2 inline-flex max-w-[min(100%,22rem)] items-center gap-1.5 border-2 bg-black/70 px-2.5 py-1 font-arcade text-[6px] uppercase leading-snug tracking-widest"
+          style={{
+            borderColor: MONAD_PURPLE,
+            color: MONAD_PURPLE,
+            boxShadow: `0 0 12px ${MONAD_PURPLE}55`,
+          }}
+        >
+          ⛓ EVERY VERDICT SEALED ON MONAD — TAMPER-PROOF COURT RECORD
+        </p>
+
+        {/* Matching stat tiles — same square size as page.tsx mobile */}
+        <div className="mt-3 grid w-full max-w-md grid-cols-3 gap-2 px-2">
           {(
             [
               { asset: "statPlayers" as const, label: "2P Players" },
@@ -127,22 +147,22 @@ export function HomeScreen({ tapFrame }: HomeScreenProps) {
             <div key={item.asset} className="flex justify-center">
               <RemotionPixelIcon
                 asset={item.asset}
-                size={110}
+                size={72}
                 alt={item.label}
-                className="h-auto w-full max-w-[110px] drop-shadow-[0_4px_0_#000]"
+                className="h-auto w-full max-w-[72px] drop-shadow-[0_4px_0_#000]"
               />
             </div>
           ))}
         </div>
 
-        <p className="mt-8">
+        <p className="mt-2.5">
           <BuilderCredit />
         </p>
       </main>
 
       {tapFrame !== undefined && (
         // Tap lands on the CALL THE JUDGE button (upper CTA)
-        <TapIndicator x={SCREEN_W / 2 + 6} y={390} tapFrame={tapFrame} />
+        <TapIndicator x={SCREEN_W / 2 + 6} y={348} tapFrame={tapFrame} />
       )}
     </div>
   );

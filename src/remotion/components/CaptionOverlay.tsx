@@ -1,4 +1,4 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { ARCADE_FONT } from "../fonts";
 
 interface CaptionOverlayProps {
@@ -17,9 +17,9 @@ interface CaptionOverlayProps {
   subText?: string;
 }
 
-/** 8-direction black outline + arcade glow, readable with sound off. */
-function outlineShadow(accent: string): string {
-  const o = 4;
+/** Thick 8-direction black outline + arcade glow — readable on phone + mobile feed. */
+function outlineShadow(accent: string, weight = 5): string {
+  const o = weight;
   const dirs = [
     [o, 0],
     [-o, 0],
@@ -31,11 +31,12 @@ function outlineShadow(accent: string): string {
     [-o, -o],
   ];
   const outline = dirs.map(([dx, dy]) => `${dx}px ${dy}px 0 #000`).join(", ");
-  return `${outline}, 0 ${o + 4}px 0 #000, 0 0 26px ${accent}66, 0 0 52px ${accent}40`;
+  return `${outline}, 0 ${o + 5}px 0 #000, 0 0 28px ${accent}70, 0 0 56px ${accent}45`;
 }
 
 /**
  * Burned-in caption rendered OUTSIDE the phone, in the product's arcade type.
+ * Sized for sound-off TikTok/Reels readability.
  */
 export function CaptionOverlay({
   text,
@@ -43,7 +44,7 @@ export function CaptionOverlay({
   to,
   position = "top",
   accent = "#ffe600",
-  fontSize = 46,
+  fontSize = 52,
   pop = false,
   edgeOffset,
   subText,
@@ -51,23 +52,27 @@ export function CaptionOverlay({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  if (frame < from - 5 || frame > to + 5) return null;
+  if (frame < from - 8 || frame > to + 8) return null;
 
   const enter = spring({
     frame: frame - from,
     fps,
-    config: pop ? { damping: 11, stiffness: 190 } : { damping: 14, stiffness: 130 },
-    durationInFrames: 22,
+    // Smooth settle — readable, not jumpy
+    config: pop
+      ? { damping: 16, stiffness: 160, mass: 0.85 }
+      : { damping: 22, stiffness: 110, mass: 0.9 },
+    durationInFrames: pop ? 18 : 26,
   });
 
-  const exit = interpolate(frame, [to - 8, to], [1, 0], {
+  const exit = interpolate(frame, [to - 12, to], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
+    easing: Easing.inOut(Easing.cubic),
   });
 
-  const scale = 0.82 + enter * 0.18;
-  const y = (1 - enter) * (position === "top" ? -34 : 34);
-  const opacity = Math.min(enter * 1.4, 1) * exit;
+  const scale = 0.88 + enter * 0.12;
+  const y = (1 - enter) * (position === "top" ? -28 : 28);
+  const opacity = Math.min(enter * 1.25, 1) * exit;
 
   return (
     <div
@@ -75,7 +80,7 @@ export function CaptionOverlay({
         position: "absolute",
         left: 0,
         right: 0,
-        [position]: edgeOffset ?? (position === "top" ? 108 : 96),
+        [position]: edgeOffset ?? (position === "top" ? 72 : 88),
         display: "flex",
         justifyContent: "center",
         zIndex: 90,
@@ -84,15 +89,15 @@ export function CaptionOverlay({
     >
       <div
         style={{
-          maxWidth: 1000,
-          padding: "0 40px",
+          maxWidth: 980,
+          padding: "0 28px",
           textAlign: "center",
           fontFamily: ARCADE_FONT,
           fontSize,
-          lineHeight: 1.55,
+          lineHeight: 1.45,
           color: "#ffffff",
-          letterSpacing: 1,
-          textShadow: outlineShadow(accent),
+          letterSpacing: 1.5,
+          textShadow: outlineShadow(accent, Math.max(5, Math.round(fontSize / 10))),
           transform: `translateY(${y}px) scale(${scale})`,
           opacity,
         }}
@@ -101,10 +106,12 @@ export function CaptionOverlay({
         {subText && (
           <div
             style={{
-              marginTop: 8,
-              fontSize: Math.round(fontSize * 0.66),
+              marginTop: 14,
+              fontSize: Math.round(fontSize * 0.62),
+              lineHeight: 1.4,
               color: "#ffffff",
-              textShadow: outlineShadow("#00f0ff"),
+              letterSpacing: 1,
+              textShadow: outlineShadow("#00f0ff", 4),
             }}
           >
             {subText}

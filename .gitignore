@@ -36,6 +36,23 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local deploy / MCP scaffolding (never commit)
+.next-verify/
+deploy-*.json
+deploy-*.txt
+mcp-deploy-args.json
+scripts/*deploy*.mjs
+scripts/write-mcp-*.mjs
+scripts/write-env-production.mjs
+scripts/emit-deploy-call-input.mjs
+scripts/invoke-deploy-mcp.mjs
+scripts/mcp-http-deploy.mjs
+scripts/add-env-to-minimal-deploy.mjs
+scripts/split-deploy-files.mjs
+scripts/materialize-*.mjs
+scripts/stdout-*.mjs
+scripts/prepare-*.mjs
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

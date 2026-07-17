@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 /// @title BEEF Verdict Registry
-/// @notice Permanent on-chain court record for BEEF (beefjudge.vercel.app).
+/// @notice Permanent on-chain court record for BEEF (sendbeef.vercel.app).
 ///         Every AI verdict is sealed on Monad: case key, docket number,
 ///         winner, weighted scores and an integrity hash of the ruling text.
 ///         Appeals that overturn a ruling flip the winner on-chain too.

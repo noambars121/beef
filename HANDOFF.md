@@ -2,19 +2,33 @@
 
 > **Purpose:** Give any LLM (or human) enough context to work on this codebase without re-discovering architecture, flows, and conventions.
 >
-> **Last updated:** 2026-07-14 · **Package:** `beef` v0.1.0 · **Repo folder:** `judge/`
+> **Last updated:** 2026-07-17 · **Package:** `beef` v0.1.0 · **Repo folder:** `judge/`
+>
+> **Live app:** [https://sendbeef.vercel.app/](https://sendbeef.vercel.app/)
+
+---
+
+## 0. Build journey (Spark Hackathon)
+
+BEEF was built end-to-end in Cursor for the Spark / Build Anything hackathon:
+
+1. **Cursor** — product UI, API routes, Convex schema, Remotion demo, and the arcade “Crowd Court” experience.
+2. **OpenAI gpt-5-nano** — the AI judge: fast JSON verdicts, scores, reasoning, and fatal roasts (runs in Convex durable actions).
+3. **Monad Testnet** (chain `10143`) — every final ruling is sealed onchain via `BeefVerdictRegistry` so the court record is tamper-evident.
+
+Product-facing docs live in `README.md`. This handoff is the engineering map.
 
 ---
 
 ## 1. What is BEEF?
 
-**BEEF** is a viral, arcade-themed web app where two people submit both sides of an internet argument and an AI judge delivers a dramatic verdict — complete with scores, reasoning, and a "fatal roast."
+**BEEF** is a social **Crowd Court for Petty Debates**. Two sides submit an argument, the group votes before the reveal, and an AI judge delivers a dramatic verdict — scores, reasoning, and a "fatal roast" — then seals it on Monad Testnet.
 
-**Tagline:** *Settle arguments with AI. Two sides. One verdict. Zero mercy.*
+**Tagline:** *Stop arguing in group chats. Use BEEF. Settle debts onchain with AI.*
 
 **Aesthetic:** Retro coin-op / fighting-game UI — pixel sprites, Press Start 2P font, CRT scanlines, neon arcade colors, courtroom backgrounds.
 
-**No user accounts.** Anonymous browser sessions identify case owners, voters, and rate-limit buckets.
+**No user accounts.** Anonymous browser sessions identify case owners, voters, and rate-limit buckets. Users never need a wallet — the server judge wallet signs seals.
 
 ---
 
@@ -92,15 +106,16 @@ On submit:
 
 | Layer | Choice |
 |-------|--------|
-| Framework | **Next.js 14.2** (App Router, `src/` directory) |
-| Language | TypeScript 5, React 18 |
-| Database | **Convex** (document DB + server functions) |
+| Framework | **Next.js 14** (App Router, `src/` directory) + TypeScript + Tailwind |
+| Backend / DB | **Convex** (document DB + durable actions for AI judge + chain seals) |
+| Onchain | **Monad Testnet** (chain ID `10143`) · `contracts/BeefVerdictRegistry.sol` · viem, server-signed txs |
+| AI | OpenAI **gpt-5-nano** (default; override with `OPENAI_MODEL_ID`) |
 | Validation | Zod 4 |
 | Animation | Framer Motion 12 |
-| Styling | Tailwind CSS 3.4 + custom arcade CSS (`globals.css`) |
-| AI | **Cursor Background Agents API** → default model `gemini-3.5-flash` |
-| On-chain | **Monad testnet** (chain 10143) · Solidity `contracts/BeefVerdictRegistry.sol` · viem, server-signed from Convex actions |
+| Video | Remotion (hackathon demo from the app design system) |
 | Fonts | Cinzel (display), DM Sans (body), JetBrains Mono, Press Start 2P (arcade) |
+
+**Registry (Monad Testnet):** `0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa`
 
 **Important architectural choice:** The UI talks **only to Next.js REST routes**, never directly to Convex hooks. All DB access goes through `src/lib/store/db.ts` (thin `fetchQuery`/`fetchMutation` wrapper).
 
@@ -256,21 +271,14 @@ All routes: Zod validation, session from cookie, in-memory rate limits, court-th
 
 ## 8. AI / verdict engine
 
-### Flow (`src/lib/verdict/engine.ts`)
+### Flow (`convex/verdictActions.ts` + `convex/lib/openaiClient.ts`)
 
-1. API route calls `startVerdictGeneration` / appeal equivalent
-2. Acquire Convex lock (sync guard → immediate 403/404/409/503)
-3. **Fire-and-forget** async loop in Next.js process (⚠️ not serverless-safe)
-4. Build prompt with up to 3 precedents → Cursor agent → poll run → parse JSON
-5. Up to 3 attempts with repair prompts on validation failure
-6. Success: `insertVerdict`, `setViralSeed`, build OG URL, clear error, unlock
-7. Failure: `recordDeliberationError`, unlock
-
-### Cursor client (`src/lib/cursor/client.ts`)
-- `POST https://api.cursor.com/v1/agents` — create agent
-- `POST .../runs` — start run (with repair follow-ups)
-- `GET .../runs/{id}` — poll every 2s, max 60 attempts
-- Auth: Basic `key:` (base64)
+1. API route schedules a **durable Convex action** for verdict (or appeal) generation.
+2. Acquire Convex deliberation/appeal lock.
+3. Build prompt with up to 3 precedents → OpenAI chat completion (`gpt-5-nano` by default) → parse JSON.
+4. Up to 3 attempts with repair prompts on validation failure.
+5. Success: `insertVerdict`, `setViralSeed`, build OG URL, clear error, unlock; Monad seal is scheduled transactionally.
+6. Failure: `recordDeliberationError`, unlock.
 
 ### Prompts (`src/lib/verdict/prompt.ts`)
 - Persona: **"BEEF — a dramatic AI judge"**
@@ -283,6 +291,8 @@ All routes: Zod validation, session from cookie, in-memory rate limits, court-th
 - Strips code fences, extracts JSON slice, Zod validates
 - **Rejects** if `winner_side` contradicts computed weighted scores → triggers repair round
 - `estimateShameScore` fallback from score margin
+
+> **Note:** Legacy Cursor Agents client code may still exist under `src/lib/cursor/` / `convex/lib/cursorClient.ts` for experiments, but production verdicts use OpenAI via Convex actions.
 
 ---
 
@@ -341,14 +351,13 @@ URLs built in `engine.ts` (`buildShareImagePath` / `buildAppealShareImagePath`) 
 ## 12. Environment variables
 
 ```bash
-# Required for AI verdicts/appeals (503 without it)
-CURSOR_API_KEY=
-
-# Optional, defaults to gemini-3.5-flash
-CURSOR_MODEL_ID=gemini-3.5-flash
+# Required for AI verdicts/appeals on Convex (503 without it)
+OPENAI_API_KEY=
+# Optional — defaults to gpt-5-nano
+OPENAI_MODEL_ID=gpt-5-nano
 
 # Optional absolute base for share URLs (falls back to request origin)
-NEXT_PUBLIC_APP_URL=
+NEXT_PUBLIC_APP_URL=https://sendbeef.vercel.app
 
 # Filled by `npx convex dev`
 CONVEX_DEPLOYMENT=
@@ -357,7 +366,7 @@ NEXT_PUBLIC_CONVEX_SITE_URL=
 
 # Monad on-chain court record — set on the CONVEX deployment (npx convex env set)
 MONAD_JUDGE_PRIVATE_KEY=
-MONAD_REGISTRY_ADDRESS=
+MONAD_REGISTRY_ADDRESS=0x7660ec3069f4332013aa4f3fa4d691cfc7b69ffa
 MONAD_RPC_URL=            # optional, defaults to https://testnet-rpc.monad.xyz
 
 # Optional: alternate build dir (Windows .next lock workaround)
@@ -382,7 +391,7 @@ npm run lint
 npm run build && npm run start
 ```
 
-**Both processes must run** for full functionality. Frontend alone works for static pages; case CRUD and verdicts need Convex + `CURSOR_API_KEY`.
+**Both processes must run** for full functionality. Frontend alone works for static pages; case CRUD and verdicts need Convex + `OPENAI_API_KEY` on the Convex deployment.
 
 ---
 
@@ -390,7 +399,6 @@ npm run build && npm run start
 
 | Issue | Detail |
 |-------|--------|
-| **Deliberation in-process** | AI loop runs fire-and-forget in the Next.js Node process. Comment in `engine.ts` says move to queue/worker before serverless deploy. |
 | **In-memory rate limits** | `src/lib/rate-limit.ts` uses a `Map` — not shared across instances or serverless invocations. |
 | **No Convex auth** | All Convex functions are public; session checks happen only in Next.js API routes. |
 | **Backward-compatible verdicts** | Older verdicts may lack `scores` / `shame_score`; UI must fall back gracefully. |
@@ -420,7 +428,7 @@ npm run build && npm run start
 | Task | Start here |
 |------|------------|
 | Understand a case's full state | `convex/cases.ts` → `getEnvelope` |
-| Change verdict logic | `src/lib/verdict/engine.ts`, `prompt.ts`, `analysis.ts` |
+| Change verdict logic | `convex/verdictActions.ts`, `convex/lib/openaiClient.ts`, `src/lib/verdict/prompt.ts`, `analysis.ts` |
 | Change case UI | `src/app/case/[id]/VerdictView.tsx` |
 | Change submission form | `src/components/case/CaseSubmissionForm.tsx` |
 | Add API endpoint | `src/app/api/`, wire through `src/lib/store/db.ts` |
@@ -436,11 +444,13 @@ npm run build && npm run start
 | Context | Value |
 |---------|-------|
 | Site name | **BEEF** |
-| Page title | `BEEF — Viral Decision Engine` |
+| Canonical URL | `https://sendbeef.vercel.app/` |
+| Page title | `BEEF — Crowd Court for Petty Debates` |
+| Meta description | `Stop arguing in group chats. Use BEEF. Settle debts onchain with AI.` |
 | AI persona | `BEEF — a dramatic AI judge` |
 | Share prefix | `BEEF RULES (CASE #0042):` |
-| Subtitle (header) | `COIN_OP_DECISION_ENGINE` |
-| Home hook | `INSERT COIN TO START` |
+| Home hook | `INSERT BEEF TO START` |
+| Product one-liner | Crowd Court for Petty Debates |
 
 ---
 

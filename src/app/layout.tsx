@@ -32,12 +32,26 @@ const pressStart2P = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "BEEF — Viral Decision Engine",
-  description: "Settle arguments with AI. Two sides. One verdict. Zero mercy.",
+  metadataBase: new URL("https://sendbeef.vercel.app"),
+  title: "BEEF — Crowd Court for Petty Debates",
+  description:
+    "Stop arguing in group chats. Use BEEF. Settle debts onchain with AI.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "BEEF",
-    description: "Settle arguments with AI. Share the verdict.",
+    title: "BEEF — Crowd Court for Petty Debates",
+    description:
+      "Stop arguing in group chats. Use BEEF. Settle debts onchain with AI.",
+    url: "https://sendbeef.vercel.app/",
     type: "website",
+    siteName: "BEEF",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BEEF — Crowd Court for Petty Debates",
+    description:
+      "Stop arguing in group chats. Use BEEF. Settle debts onchain with AI.",
   },
 };
 

@@ -81,18 +81,25 @@ export const CAPTIONS = {
   hook: "YOUR GROUP CHAT HAS A JUDGE NOW.",
   twoSides: "TWO SIDES ENTER.",
   oneEgo: "ONE EGO LEAVES DAMAGED.",
-  newJury: "NEW: JURY MODE",
+  newJury: "JURY MODE",
   crowdFirst: "THE CROWD JUDGES FIRST.",
-  newTrap: "NEW: THE TRAP",
+  newTrap: "THE TRAP",
   pickBlind: "PICK A SIDE. NO PEEKING.",
   fiveMinLater: "5 MINUTES LATER…",
   courtSpoken: "THE COURT HAS SPOKEN.",
+  sealedOnChain: "SEALED ON MONAD.",
   sendIt: "SEND THIS TO THE GROUP CHAT",
   hall: "EVERY BEEF ENDS UP HERE.",
   endTitle: "BEEF",
   endLine1: "SETTLE THE ARGUMENT.",
   endLine2: "LET THE AI COOK.",
   endSmall: "FOR PETTY DEBATES. NOT SERIOUS DISPUTES.",
+} as const;
+
+/** Demo on-chain seal shown on the verdict screen (mirrors MonadSealBadge). */
+export const DEMO_MONAD = {
+  status: "sealed" as const,
+  txShort: "0xbeef…42a1",
 } as const;
 
 // ---- Hall of Shame demo leaderboard ----
