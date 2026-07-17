@@ -4,7 +4,7 @@
 
 BEEF is a social **Crowd Court for Petty Debates**. Submit both sides, share the case link, and make the group pick a side before the AI judge’s verdict is revealed.
 
-The verdict is permanently sealed on Monad Testnet, creating a tamper-evident court record.
+The verdict is sealed on Monad Testnet, creating a tamper-evident court record that can be independently verified.
 
 **Hackathon:** Spark / Build Anything
 
@@ -92,4 +92,4 @@ npm run chain:deploy    # deploy to Monad Testnet, prints the address
 
 - No user accounts: anonymous browser sessions identify case owners, voters, and rate-limit buckets. Users never need a wallet — the app signs all chain writes.
 - Verdict generation and chain sealing both run as **durable Convex actions**, scheduled transactionally with the verdict insert.
-- Chain writes are retried and the UI reports seal status (`SEALING` → `SEALED · VERIFY TX`, or a graceful off-chain fallback if the RPC is down).
+- Chain writes are retried and the UI reports the actual seal status: `SEALING` → `SEALED · VERIFY TX`. If sealing cannot complete, the case remains clearly marked as pending or unsealed.
